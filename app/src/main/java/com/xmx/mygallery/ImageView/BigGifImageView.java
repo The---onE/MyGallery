@@ -1,10 +1,8 @@
 package com.xmx.mygallery.ImageView;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Movie;
 import android.graphics.PointF;
@@ -14,24 +12,12 @@ import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.ImageView;
 
-import com.xmx.mygallery.R;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
-public class BigGifImageView extends ImageView {
-
-    private static final int DEFAULT_MOVIE_DURATION = 1000;
-    private Movie mMovie;
-    private Bitmap mBitmap;
-    private long mMovieStart;
-    private int mCurrentAnimationTime = 0;
-    private float mLeft;
-    private float mTop;
-    private float mScale;
-    private float defaultScale = 2.5f;
+public class BigGifImageView extends GifImageView {
 
     Matrix matrix = new Matrix();
     Matrix savedMatrix = new Matrix();
@@ -86,23 +72,6 @@ public class BigGifImageView extends ImageView {
 
     public BigGifImageView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-            setLayerType(View.LAYER_TYPE_SOFTWARE, null);
-        }
-    }
-
-    public void setImageMovie(Movie movie) {
-        mMovie = movie;
-        mBitmap = null;
-        setupMovie();
-    }
-
-    @Override
-    public void setImageBitmap(Bitmap bm) {
-        super.setImageBitmap(bm);
-        mBitmap = bm;
-        mMovie = null;
-        setupBitmap();
     }
 
     public void setImageByPath(String path) {
@@ -121,11 +90,11 @@ public class BigGifImageView extends ImageView {
     }
 
     public void setImageByPathLoader(String path) {
-        setImageByPathLoader(path, BigGifImageLoader.Type.LIFO);
+        setImageByPathLoader(path, GifImageLoader.Type.LIFO);
     }
 
-    public void setImageByPathLoader(String path, BigGifImageLoader.Type type) {
-        BigGifImageLoader.getInstance(3, type).loadImage(path, this);
+    public void setImageByPathLoader(String path, GifImageLoader.Type type) {
+        GifImageLoader.getInstance(3, type).loadImage(path + "#", this);
     }
 
     @Override
@@ -136,16 +105,16 @@ public class BigGifImageView extends ImageView {
             int movieHeight = mMovie.height();
             int defaultWidth = MeasureSpec.getSize(widthMeasureSpec);
             int defaultHeight = MeasureSpec.getSize(heightMeasureSpec);
-            int width = (int) (movieWidth * defaultScale);
+            int width = (int) (movieWidth * customScale);
 
             if (width > defaultWidth) {
                 width = defaultWidth;
-                defaultScale = (float) width / (float) movieWidth;
+                customScale = (float) width / (float) movieWidth;
             }
             mScale = (float) width / (float) movieWidth;
             if (movieHeight * mScale > defaultHeight) {
                 mScale = defaultHeight / movieHeight;
-                defaultScale = mScale;
+                customScale = mScale;
             }
 
             mLeft = (defaultWidth - movieWidth * mScale) / 2f;
@@ -155,54 +124,7 @@ public class BigGifImageView extends ImageView {
     }
 
     @Override
-    protected void onDraw(Canvas canvas) {
-        if (mMovie != null) {
-            updateAnimationTime();
-            drawMovieFrame(canvas);
-            invalidateView();
-        } else {
-            super.onDraw(canvas);
-        }
-    }
-
-    @SuppressLint("NewApi")
-    private void invalidateView() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            postInvalidateOnAnimation();
-        } else {
-            invalidate();
-        }
-    }
-
-    private void updateAnimationTime() {
-        if (mMovie != null) {
-            long now = android.os.SystemClock.uptimeMillis();
-            // 如果第一帧，记录起始时间
-            if (mMovieStart == 0) {
-                mMovieStart = now;
-            }
-            // 取出动画的时长
-            int dur = mMovie.duration();
-            if (dur == 0) {
-                dur = DEFAULT_MOVIE_DURATION;
-            }
-            // 算出需要显示第几帧
-            mCurrentAnimationTime = (int) ((now - mMovieStart) % dur);
-        }
-    }
-
-    private void drawMovieFrame(Canvas canvas) {
-        if (mMovie != null) {
-            // 设置要显示的帧，绘制即可
-            mMovie.setTime(mCurrentAnimationTime);
-            canvas.save(Canvas.MATRIX_SAVE_FLAG);
-            canvas.scale(mScale, mScale);
-            mMovie.draw(canvas, mLeft / mScale, mTop / mScale);
-            canvas.restore();
-        }
-    }
-
-    public void setupMovie() {
+    protected void setupMovie() {
         requestLayout();
         postInvalidate();
         this.setOnTouchListener(new OnTouchListener() {
@@ -216,7 +138,7 @@ public class BigGifImageView extends ImageView {
                     // 副点按下
                     case MotionEvent.ACTION_POINTER_DOWN:
                         dist = spacing(event);
-                        scale = defaultScale;
+                        scale = customScale;
                         // 如果连续两点距离大于10，则判定为多点模式
                         if (spacing(event) > 10f) {
                             midPoint(mid, event);
@@ -234,7 +156,7 @@ public class BigGifImageView extends ImageView {
                             float newDist = spacing(event);
                             if (newDist > 10f) {
                                 float tScale = newDist / dist;
-                                defaultScale = scale * tScale;
+                                customScale = scale * tScale;
                                 requestLayout();
                                 postInvalidate();
                             }
@@ -246,7 +168,8 @@ public class BigGifImageView extends ImageView {
         });
     }
 
-    public void setupBitmap() {
+    @Override
+    protected void setupBitmap() {
         Context context = getContext();
         //获取屏幕分辨率,需要根据分辨率来使用图片居中
         dm = context.getResources().getDisplayMetrics();
@@ -256,7 +179,7 @@ public class BigGifImageView extends ImageView {
 
         //bitmap为空就不调用center函数
         if (mBitmap != null) {
-            int suitableWidth = (int) (mBitmap.getWidth() * defaultScale);
+            int suitableWidth = (int) (mBitmap.getWidth() * customScale);
             int width = suitableWidth < dm.widthPixels ? suitableWidth : dm.widthPixels;
 
             mScale = (float) width / (float) mBitmap.getWidth();

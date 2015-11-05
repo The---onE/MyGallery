@@ -21,16 +21,17 @@ import java.io.FileNotFoundException;
 
 public class GifImageView extends ImageView {
 
-    private static final int DEFAULT_MOVIE_DURATION = 1000;
-    private static final float defaultScale = 2.5f;
-    private String mPath;
-    private Movie mMovie;
-    private Bitmap mBitmap;
-    private long mMovieStart;
-    private int mCurrentAnimationTime = 0;
-    private float mLeft;
-    private float mTop;
-    private float mScale;
+    protected static final int DEFAULT_MOVIE_DURATION = 1000;
+    
+    protected float customScale = 5f;
+    protected String mPath;
+    protected Movie mMovie;
+    protected Bitmap mBitmap;
+    protected long mMovieStart;
+    protected int mCurrentAnimationTime = 0;
+    protected float mLeft;
+    protected float mTop;
+    protected float mScale;
 
     public GifImageView(Context context) {
         this(context, null);
@@ -50,8 +51,7 @@ public class GifImageView extends ImageView {
     public void setImageMovie(Movie movie) {
         mMovie = movie;
         mBitmap = null;
-        requestLayout();
-        postInvalidate();
+        setupMovie();
     }
 
     @Override
@@ -59,8 +59,7 @@ public class GifImageView extends ImageView {
         super.setImageBitmap(bm);
         mBitmap = bm;
         mMovie = null;
-        requestLayout();
-        postInvalidate();
+        setupBitmap();
     }
 
     public void setImageByPath(String path) {
@@ -145,8 +144,8 @@ public class GifImageView extends ImageView {
 
             boolean widthFlag = ((float) movieWidth / defaultWidth) > ((float) movieHeight / defaultHeight);
 
-            int actualWidth = resolveActualSize((int) (movieWidth * defaultScale), widthMeasureSpec);
-            int actualHeight = resolveActualSize((int) (movieHeight * defaultScale), heightMeasureSpec);
+            int actualWidth = resolveActualSize((int) (movieWidth * customScale), widthMeasureSpec);
+            int actualHeight = resolveActualSize((int) (movieHeight * customScale), heightMeasureSpec);
 
             if (widthFlag) {
                 mScale = (float) actualWidth / (float) movieWidth;
@@ -255,4 +254,13 @@ public class GifImageView extends ImageView {
         }
     }
 
+    protected void setupMovie() {
+        requestLayout();
+        postInvalidate();
+    }
+
+    protected void setupBitmap() {
+        requestLayout();
+        postInvalidate();
+    }
 }

@@ -148,7 +148,7 @@ public class GifImageLoader {
 
         // 获取应用程序最大可用内存
         int maxMemory = (int) Runtime.getRuntime().maxMemory();
-        int cacheSize = (int) (maxMemory * 0.75);
+        int cacheSize = maxMemory / 3;
         mLruCache = new LruCache<String, Image>(cacheSize) {
             @Override
             protected int sizeOf(String key, Image value) {
@@ -192,6 +192,14 @@ public class GifImageLoader {
         }
     }
 
+    private String getPath(String s) {
+        if (!s.endsWith("#")) {
+            return s;
+        } else {
+            return s.substring(0, s.length()-1);
+        }
+    }
+
     /**
      * 加载图片
      *
@@ -223,7 +231,7 @@ public class GifImageLoader {
                     Image im = new Image();
                     Movie movie = null;
                     try {
-                        movie = Movie.decodeStream(new FileInputStream(path));
+                        movie = Movie.decodeStream(new FileInputStream(getPath(path)));
                     } catch (FileNotFoundException e) {
                         e.printStackTrace();
                     }
@@ -238,7 +246,7 @@ public class GifImageLoader {
                         int reqWidth = imageSize.width;
                         int reqHeight = imageSize.height;
 
-                        im.bitmap = decodeSampledBitmapFromResource(path, reqWidth, reqHeight);
+                        im.bitmap = decodeSampledBitmapFromResource(getPath(path), reqWidth, reqHeight);
                     }
 
                     addImageToLruCache(path, im);
