@@ -7,6 +7,7 @@ import android.support.v4.view.ViewPager;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.LinearLayout;
 
 import com.xmx.mygallery.ImageView.BigGifImageView;
@@ -69,12 +70,59 @@ public class BigPhotoActivity extends Activity {
                     l.setGravity(Gravity.CENTER | Gravity.CENTER_HORIZONTAL | Gravity.CENTER_VERTICAL);
                     l.setOrientation(LinearLayout.VERTICAL);
 
-                    BigGifImageView iv = new BigGifImageView(BigPhotoActivity.this);
+                    final BigGifImageView iv = new BigGifImageView(BigPhotoActivity.this);
                     iv.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
                             LinearLayout.LayoutParams.MATCH_PARENT));
-                    //iv.setImageByPath(paths.get(position), false);
-                    iv.setImageByPathLoader(paths.get(position));
+                    boolean flag = iv.setImageByPathLoader(paths.get(position));
+
+                    if (flag) {
+                        LinearLayout buttonLayout = new LinearLayout(BigPhotoActivity.this);
+                        buttonLayout.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
+                                LinearLayout.LayoutParams.WRAP_CONTENT));
+                        buttonLayout.setGravity(Gravity.CENTER);
+                        buttonLayout.setOrientation(LinearLayout.HORIZONTAL);
+
+                        Button last = new Button(BigPhotoActivity.this);
+                        last.setText("后退");
+                        last.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
+                                LinearLayout.LayoutParams.WRAP_CONTENT));
+                        last.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                iv.lastFrame();
+                            }
+                        });
+                        buttonLayout.addView(last);
+
+                        Button pause = new Button(BigPhotoActivity.this);
+                        pause.setText("暂停/播放");
+                        pause.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
+                                LinearLayout.LayoutParams.WRAP_CONTENT));
+                        pause.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                iv.playPauseGif();
+                            }
+                        });
+                        buttonLayout.addView(pause);
+
+                        Button next = new Button(BigPhotoActivity.this);
+                        next.setText("前进");
+                        next.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
+                                LinearLayout.LayoutParams.WRAP_CONTENT));
+                        next.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                iv.nextFrame();
+                            }
+                        });
+                        buttonLayout.addView(next);
+
+                        l.addView(buttonLayout);
+                    }
+
                     l.addView(iv);
+
                     container.addView(l);
                     //vp.setObjectForPosition(l, position);
                     return l;
@@ -88,6 +136,5 @@ public class BigPhotoActivity extends Activity {
             layout.addView(vp);
             vp.setCurrentItem(index);
         }
-        //TODO
     }
 }

@@ -196,7 +196,7 @@ public class GifImageLoader {
         if (!s.endsWith("#")) {
             return s;
         } else {
-            return s.substring(0, s.length()-1);
+            return s.substring(0, s.length() - 1);
         }
     }
 
@@ -209,7 +209,7 @@ public class GifImageLoader {
     public void loadImage(final String path, final GifImageView imageView) {
         // set tag
         imageView.setTag(path);
-        imageView.setPath(path);
+        imageView.setPath(getPath(path));
         // UI线程
         if (mHandler == null) {
             mHandler = new LoadImageHandler();

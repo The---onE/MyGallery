@@ -2,36 +2,36 @@ package com.xmx.mygallery.ImageView;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Movie;
+import android.media.ImageReader;
 import android.os.Build;
 import android.util.AttributeSet;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 
-import com.xmx.mygallery.BigPhotoActivity;
-import com.xmx.mygallery.R;
-
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.File;
 
 public class GifImageView extends ImageView {
 
     protected static final int DEFAULT_MOVIE_DURATION = 1000;
-    
+
     protected float customScale = 5f;
     protected String mPath;
     protected Movie mMovie;
     protected Bitmap mBitmap;
     protected long mMovieStart;
     protected int mCurrentAnimationTime = 0;
+    protected long mOffset = 0;
+    protected int duration;
+    protected long mLatestTime;
     protected float mLeft;
     protected float mTop;
     protected float mScale;
+
+    private boolean playFlag = true;
 
     public GifImageView(Context context) {
         this(context, null);
@@ -51,6 +51,11 @@ public class GifImageView extends ImageView {
     public void setImageMovie(Movie movie) {
         mMovie = movie;
         mBitmap = null;
+
+        duration = mMovie.duration();
+        if (duration == 0) {
+            duration = DEFAULT_MOVIE_DURATION;
+        }
         setupMovie();
     }
 
@@ -62,36 +67,34 @@ public class GifImageView extends ImageView {
         setupBitmap();
     }
 
-    public void setImageByPath(String path) {
+    public boolean setImageByPath(String path) {
         mPath = path;
-        Movie movie = null;
-        try {
-            movie = Movie.decodeStream(new FileInputStream(path));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
+        Movie movie = Movie.decodeFile(path);
 
         if (movie != null) {
             setImageMovie(movie);
+            return true;
         } else {
             setImageBitmap(BitmapFactory.decodeFile(path));
+            return false;
         }
     }
 
-    public void setImageByPathLoader(String path) {
-        setImageByPathLoader(path, GifImageLoader.Type.LIFO);
+    public boolean setImageByPathLoader(String path) {
+        return setImageByPathLoader(path, GifImageLoader.Type.LIFO);
     }
 
-    public void setImageByPathLoader(String path, GifImageLoader.Type type) {
+    public boolean setImageByPathLoader(String path, GifImageLoader.Type type) {
         GifImageLoader.getInstance(5, type).loadImage(path, this);
+        setPath(path);
+        BitmapFactory.Options opts = new BitmapFactory.Options();
+        opts.inJustDecodeBounds = true;
+        BitmapFactory.decodeFile(path, opts);
+        return opts.outMimeType.equals("image/gif");
     }
 
     public void setPath(String path) {
         mPath = path;
-    }
-
-    public String getPath() {
-        return mPath;
     }
 
     private int resolveActualSize(int desiredSize, int measureSpec) {
@@ -131,6 +134,28 @@ public class GifImageView extends ImageView {
                 break;
         }
         return result;
+    }
+
+    public static int resolveSizeAndState(int size, int measureSpec, int childMeasuredState) {
+        final int specMode = MeasureSpec.getMode(measureSpec);
+        final int specSize = MeasureSpec.getSize(measureSpec);
+        final int result;
+        switch (specMode) {
+            case MeasureSpec.AT_MOST:
+                if (specSize < size) {
+                    result = specSize | MEASURED_STATE_TOO_SMALL;
+                } else {
+                    result = size;
+                }
+                break;
+            case MeasureSpec.EXACTLY:
+                result = specSize;
+                break;
+            case MeasureSpec.UNSPECIFIED:
+            default:
+                result = size;
+        }
+        return result | (childMeasuredState & MEASURED_STATE_MASK);
     }
 
     @Override
@@ -206,6 +231,10 @@ public class GifImageView extends ImageView {
         }
     }
 
+    public void playPauseGif() {
+        playFlag = !playFlag;
+    }
+
     @Override
     protected void onDraw(Canvas canvas) {
         if (mMovie != null) {
@@ -233,13 +262,13 @@ public class GifImageView extends ImageView {
             if (mMovieStart == 0) {
                 mMovieStart = now;
             }
-            // 取出动画的时长
-            int dur = mMovie.duration();
-            if (dur == 0) {
-                dur = DEFAULT_MOVIE_DURATION;
+
+            if (!playFlag) {
+                mOffset += now - mLatestTime;
             }
+            mLatestTime = now;
             // 算出需要显示第几帧
-            mCurrentAnimationTime = (int) ((now - mMovieStart) % dur);
+            mCurrentAnimationTime = (int) ((now - mMovieStart - mOffset) % duration);
         }
     }
 
