@@ -1,23 +1,21 @@
 package com.xmx.mygallery.ImageView;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
-import android.graphics.Movie;
 import android.graphics.PointF;
 import android.graphics.RectF;
-import android.os.Build;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.view.MotionEvent;
 import android.view.View;
 
-
+import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.InputStream;
 
 public class BigGifImageView extends GifImageView {
+    protected int mFrameTime = 0;
 
     Matrix matrix = new Matrix();
     Matrix savedMatrix = new Matrix();
@@ -74,27 +72,17 @@ public class BigGifImageView extends GifImageView {
         super(context, attrs, defStyle);
     }
 
-    public void setImageByPath(String path) {
-        Movie movie = null;
-        try {
-            movie = Movie.decodeStream(new FileInputStream(path));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-
-        if (movie != null) {
-            setImageMovie(movie);
-        } else {
-            setImageBitmap(BitmapFactory.decodeFile(path));
-        }
+    public boolean setImageByPathLoader(String path) {
+        return setImageByPathLoader(path, GifImageLoader.Type.LIFO);
     }
 
-    public void setImageByPathLoader(String path) {
-        setImageByPathLoader(path, GifImageLoader.Type.LIFO);
-    }
-
-    public void setImageByPathLoader(String path, GifImageLoader.Type type) {
+    public boolean setImageByPathLoader(String path, GifImageLoader.Type type) {
         GifImageLoader.getInstance(3, type).loadImage(path + "#", this);
+        setPath(path);
+        BitmapFactory.Options opts = new BitmapFactory.Options();
+        opts.inJustDecodeBounds = true;
+        BitmapFactory.decodeFile(path, opts);
+        return opts.outMimeType.equals("image/gif");
     }
 
     @Override
@@ -127,6 +115,20 @@ public class BigGifImageView extends GifImageView {
     protected void setupMovie() {
         requestLayout();
         postInvalidate();
+
+        GifDecoder gif = new GifDecoder();
+        File file = new File(mPath);
+        byte[] bytes = new byte[(int) file.length()];
+        try {
+            InputStream inputStream = new FileInputStream(file);
+            inputStream.read(bytes);
+            gif.read(bytes);
+            int frames = gif.getFrameCount();
+            mFrameTime = mDuration / frames;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         this.setOnTouchListener(new OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -317,5 +319,25 @@ public class BigGifImageView extends GifImageView {
         float x = event.getX(0) + event.getX(1);
         float y = event.getY(0) + event.getY(1);
         point.set(x / 2, y / 2);
+    }
+
+    public void play() {
+        mStatus = PLAY;
+    }
+
+    public void pause() {
+        mStatus = PAUSE;
+    }
+
+    public void upend() {
+        mStatus = UPEND;
+    }
+
+    public void nextFrame() {
+        mOffset -= mFrameTime;
+    }
+
+    public void lastFrame() {
+        mOffset += mFrameTime;
     }
 }

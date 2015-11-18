@@ -6,13 +6,10 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Movie;
-import android.media.ImageReader;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.ImageView;
-
-import java.io.File;
 
 public class GifImageView extends ImageView {
 
@@ -25,13 +22,16 @@ public class GifImageView extends ImageView {
     protected long mMovieStart;
     protected int mCurrentAnimationTime = 0;
     protected long mOffset = 0;
-    protected int duration;
+    protected int mDuration;
     protected long mLatestTime;
     protected float mLeft;
     protected float mTop;
     protected float mScale;
 
-    private boolean playFlag = true;
+    static final int PLAY = 0;
+    static final int PAUSE = 1;
+    static final int UPEND = -1;
+    protected int mStatus = PLAY;
 
     public GifImageView(Context context) {
         this(context, null);
@@ -52,9 +52,9 @@ public class GifImageView extends ImageView {
         mMovie = movie;
         mBitmap = null;
 
-        duration = mMovie.duration();
-        if (duration == 0) {
-            duration = DEFAULT_MOVIE_DURATION;
+        mDuration = mMovie.duration();
+        if (mDuration == 0) {
+            mDuration = DEFAULT_MOVIE_DURATION;
         }
         setupMovie();
     }
@@ -231,10 +231,6 @@ public class GifImageView extends ImageView {
         }
     }
 
-    public void playPauseGif() {
-        playFlag = !playFlag;
-    }
-
     @Override
     protected void onDraw(Canvas canvas) {
         if (mMovie != null) {
@@ -263,12 +259,24 @@ public class GifImageView extends ImageView {
                 mMovieStart = now;
             }
 
-            if (!playFlag) {
-                mOffset += now - mLatestTime;
+            switch (mStatus) {
+                case PAUSE:
+                    mOffset += now - mLatestTime;
+                    break;
+
+                case UPEND:
+                    mOffset += (now - mLatestTime) * 2;
+                    break;
+
+                default:
+                    break;
             }
             mLatestTime = now;
-            // 算出需要显示第几帧
-            mCurrentAnimationTime = (int) ((now - mMovieStart - mOffset) % duration);
+            long time = now - mMovieStart - mOffset;
+            mCurrentAnimationTime = (int) (time % mDuration);
+            if (time < 0) {
+                mCurrentAnimationTime += mDuration;
+            }
         }
     }
 
