@@ -56,6 +56,7 @@ public class GifImageView extends ImageView {
         if (mDuration == 0) {
             mDuration = DEFAULT_MOVIE_DURATION;
         }
+        mLatestTime = android.os.SystemClock.uptimeMillis();
         setupMovie();
     }
 
