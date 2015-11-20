@@ -1,6 +1,7 @@
 package com.xmx.mygallery;
 
 import android.app.Activity;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
@@ -18,11 +19,95 @@ public class BigPhotoActivity extends Activity {
     LinearLayout layout;
     //JazzyViewPager vp;
     ViewPager vp;
-    BigGifImageView gif_view;
     String path;
     ArrayList<String> paths;
     int index;
     boolean flipFlag;
+
+    private LinearLayout setPhoto(String path) {
+        LinearLayout l = new LinearLayout(BigPhotoActivity.this);
+        l.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.MATCH_PARENT));
+        l.setGravity(Gravity.CENTER | Gravity.CENTER_HORIZONTAL | Gravity.CENTER_VERTICAL);
+        l.setOrientation(LinearLayout.VERTICAL);
+
+        final BigGifImageView iv = new BigGifImageView(BigPhotoActivity.this);
+        iv.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.MATCH_PARENT, 1));
+        boolean flag = iv.setImageByPathLoader(path);
+        l.addView(iv);
+
+        if (flag) {
+            LinearLayout buttonLayout = new LinearLayout(BigPhotoActivity.this);
+            buttonLayout.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.MATCH_PARENT, 9));
+            buttonLayout.setGravity(Gravity.CENTER);
+            buttonLayout.setOrientation(LinearLayout.HORIZONTAL);
+
+            Button last = new Button(BigPhotoActivity.this);
+            last.setText("后退");
+            last.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT));
+            last.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    iv.lastFrame();
+                }
+            });
+            buttonLayout.addView(last);
+
+            Button upend = new Button(BigPhotoActivity.this);
+            upend.setText("倒放");
+            upend.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT));
+            upend.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    iv.upend();
+                }
+            });
+            buttonLayout.addView(upend);
+
+            Button pause = new Button(BigPhotoActivity.this);
+            pause.setText("暂停");
+            pause.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT));
+            pause.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    iv.pause();
+                }
+            });
+            buttonLayout.addView(pause);
+
+            Button play = new Button(BigPhotoActivity.this);
+            play.setText("播放");
+            play.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT));
+            play.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    iv.play();
+                }
+            });
+            buttonLayout.addView(play);
+
+            Button next = new Button(BigPhotoActivity.this);
+            next.setText("前进");
+            next.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT));
+            next.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    iv.nextFrame();
+                }
+            });
+            buttonLayout.addView(next);
+
+            l.addView(buttonLayout);
+        }
+        return l;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,13 +120,18 @@ public class BigPhotoActivity extends Activity {
         if (index == -1) {
             flipFlag = false;
             path = getIntent().getStringExtra("path");
+            if (path == null) {
+                path = getIntent().getData().toString();
+                if (path != null) {
+                    Uri uri = getIntent().getData();
+                    path = uri.getPath();
+                }
+            }
 
-            gif_view = new BigGifImageView(this);
-            gif_view.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
-                    LinearLayout.LayoutParams.MATCH_PARENT));
-            gif_view.setImageByPathLoader(path);
-
-            layout.addView(gif_view);
+            if (path != null) {
+                LinearLayout l = setPhoto(path);
+                layout.addView(l);
+            }
         } else {
             flipFlag = true;
             paths = getIntent().getStringArrayListExtra("paths");
@@ -63,88 +153,8 @@ public class BigPhotoActivity extends Activity {
                 }
 
                 @Override
-                public Object instantiateItem (ViewGroup container, int position) {
-                    LinearLayout l = new LinearLayout(BigPhotoActivity.this);
-                    l.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
-                            LinearLayout.LayoutParams.MATCH_PARENT));
-                    l.setGravity(Gravity.CENTER | Gravity.CENTER_HORIZONTAL | Gravity.CENTER_VERTICAL);
-                    l.setOrientation(LinearLayout.VERTICAL);
-
-                    final BigGifImageView iv = new BigGifImageView(BigPhotoActivity.this);
-                    iv.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
-                            LinearLayout.LayoutParams.MATCH_PARENT, 1));
-                    boolean flag = iv.setImageByPathLoader(paths.get(position));
-                    l.addView(iv);
-
-                    if (flag) {
-                        LinearLayout buttonLayout = new LinearLayout(BigPhotoActivity.this);
-                        buttonLayout.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
-                                LinearLayout.LayoutParams.MATCH_PARENT, 9));
-                        buttonLayout.setGravity(Gravity.CENTER);
-                        buttonLayout.setOrientation(LinearLayout.HORIZONTAL);
-
-                        Button last = new Button(BigPhotoActivity.this);
-                        last.setText("后退");
-                        last.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
-                                LinearLayout.LayoutParams.WRAP_CONTENT));
-                        last.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                iv.lastFrame();
-                            }
-                        });
-                        buttonLayout.addView(last);
-
-                        Button upend = new Button(BigPhotoActivity.this);
-                        upend.setText("倒放");
-                        upend.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
-                                LinearLayout.LayoutParams.WRAP_CONTENT));
-                        upend.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                iv.upend();
-                            }
-                        });
-                        buttonLayout.addView(upend);
-
-                        Button pause = new Button(BigPhotoActivity.this);
-                        pause.setText("暂停");
-                        pause.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
-                                LinearLayout.LayoutParams.WRAP_CONTENT));
-                        pause.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                iv.pause();
-                            }
-                        });
-                        buttonLayout.addView(pause);
-
-                        Button play = new Button(BigPhotoActivity.this);
-                        play.setText("播放");
-                        play.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
-                                LinearLayout.LayoutParams.WRAP_CONTENT));
-                        play.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                iv.play();
-                            }
-                        });
-                        buttonLayout.addView(play);
-
-                        Button next = new Button(BigPhotoActivity.this);
-                        next.setText("前进");
-                        next.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
-                                LinearLayout.LayoutParams.WRAP_CONTENT));
-                        next.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                iv.nextFrame();
-                            }
-                        });
-                        buttonLayout.addView(next);
-
-                        l.addView(buttonLayout);
-                    }
+                public Object instantiateItem(ViewGroup container, int position) {
+                    LinearLayout l = setPhoto(paths.get(position));
 
                     container.addView(l);
                     //vp.setObjectForPosition(l, position);
