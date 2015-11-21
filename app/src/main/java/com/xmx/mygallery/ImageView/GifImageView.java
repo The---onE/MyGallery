@@ -49,23 +49,27 @@ public class GifImageView extends ImageView {
     }
 
     public void setImageMovie(Movie movie) {
-        mMovie = movie;
-        mBitmap = null;
+        if (movie != null) {
+            mMovie = movie;
+            mBitmap = null;
 
-        mDuration = mMovie.duration();
-        if (mDuration == 0) {
-            mDuration = DEFAULT_MOVIE_DURATION;
+            mDuration = mMovie.duration();
+            if (mDuration == 0) {
+                mDuration = DEFAULT_MOVIE_DURATION;
+            }
+            mLatestTime = android.os.SystemClock.uptimeMillis();
+            setupMovie();
         }
-        mLatestTime = android.os.SystemClock.uptimeMillis();
-        setupMovie();
     }
 
     @Override
     public void setImageBitmap(Bitmap bm) {
-        super.setImageBitmap(bm);
-        mBitmap = bm;
-        mMovie = null;
-        setupBitmap();
+        if (bm != null) {
+            super.setImageBitmap(bm);
+            mBitmap = bm;
+            mMovie = null;
+            setupBitmap();
+        }
     }
 
     public boolean setImageByPath(String path) {
