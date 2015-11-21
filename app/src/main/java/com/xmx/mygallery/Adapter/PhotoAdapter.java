@@ -50,7 +50,7 @@ public class PhotoAdapter extends BaseAdapter {
             holder = (ViewHolder) convertView.getTag();
         }
         holder.iv.setImageResource(R.drawable.pic_loading);
-        holder.iv.setImageByPath(album.getPaths().get(position));
+        holder.iv.setImageByPathLoader(album.getPaths().get(position));
         return convertView;
     }
 }

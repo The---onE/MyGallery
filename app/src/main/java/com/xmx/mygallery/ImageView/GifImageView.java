@@ -95,7 +95,7 @@ public class GifImageView extends ImageView {
         BitmapFactory.Options opts = new BitmapFactory.Options();
         opts.inJustDecodeBounds = true;
         BitmapFactory.decodeFile(path, opts);
-        return opts.outMimeType.equals("image/gif");
+        return opts.outMimeType != null && opts.outMimeType.equals("image/gif");
     }
 
     public void setPath(String path) {
