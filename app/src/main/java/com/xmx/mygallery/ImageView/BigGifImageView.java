@@ -82,7 +82,7 @@ public class BigGifImageView extends GifImageView {
         BitmapFactory.Options opts = new BitmapFactory.Options();
         opts.inJustDecodeBounds = true;
         BitmapFactory.decodeFile(path, opts);
-
+        return opts.outMimeType != null && opts.outMimeType.equals("image/gif");
     }
 
     @Override
