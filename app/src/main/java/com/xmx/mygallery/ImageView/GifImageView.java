@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Movie;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.view.View;
@@ -64,12 +65,24 @@ public class GifImageView extends ImageView {
 
     @Override
     public void setImageBitmap(Bitmap bm) {
+        super.setImageBitmap(bm);
         if (bm != null) {
-            super.setImageBitmap(bm);
             mBitmap = bm;
             mMovie = null;
             setupBitmap();
         }
+    }
+
+    @Override
+    public void setImageResource(int resId) {
+        super.setImageResource(resId);
+        mMovie = null;
+    }
+
+    @Override
+    public void setImageDrawable(Drawable drawable) {
+        super.setImageDrawable(drawable);
+        mMovie = null;
     }
 
     public boolean setImageByPath(String path) {
@@ -100,6 +113,10 @@ public class GifImageView extends ImageView {
 
     public void setPath(String path) {
         mPath = path;
+    }
+
+    public String getPath() {
+        return mPath;
     }
 
     private int resolveActualSize(int desiredSize, int measureSpec) {

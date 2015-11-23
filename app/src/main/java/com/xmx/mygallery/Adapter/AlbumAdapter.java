@@ -39,6 +39,7 @@ public class AlbumAdapter extends BaseAdapter {
 
     static class ViewHolder {
         GifImageView iv;
+        GifImageView iv2;
         TextView tv;
     }
 
@@ -49,6 +50,7 @@ public class AlbumAdapter extends BaseAdapter {
             convertView = LayoutInflater.from(context).inflate(R.layout.album_item, null);
             holder = new ViewHolder();
             holder.iv = (GifImageView) convertView.findViewById(R.id.album_item_image);
+            holder.iv2 = (GifImageView) convertView.findViewById(R.id.album_item_image2);
             holder.tv = (TextView) convertView.findViewById(R.id.album_item_name);
             convertView.setTag(holder);
         } else {
@@ -56,6 +58,14 @@ public class AlbumAdapter extends BaseAdapter {
         }
         holder.iv.setImageResource(R.drawable.pic_loading);
         holder.iv.setImageByPathLoader(albumList.get(position).getPaths().get(0));
+        if (holder.iv2 != null) {
+            holder.iv2.setImageResource(R.drawable.pic_loading);
+            if (albumList.get(position).getPaths().size() > 1) {
+                holder.iv2.setImageByPathLoader(albumList.get(position).getPaths().get(1));
+            } else {
+                holder.iv2.setImageBitmap(null);
+            }
+        }
         holder.tv.setText(albumList.get(position).getName() + "(" + albumList.get(position).getCount() + ")");
         return convertView;
     }

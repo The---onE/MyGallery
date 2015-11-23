@@ -1,6 +1,7 @@
 package com.xmx.mygallery;
 
 import android.app.Activity;
+import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.view.PagerAdapter;
@@ -24,23 +25,14 @@ public class BigPhotoActivity extends Activity {
     int index;
     boolean flipFlag;
 
-    private LinearLayout setPhoto(String path) {
-        LinearLayout l = new LinearLayout(BigPhotoActivity.this);
-        l.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.MATCH_PARENT));
-        l.setGravity(Gravity.CENTER | Gravity.CENTER_HORIZONTAL | Gravity.CENTER_VERTICAL);
-        l.setOrientation(LinearLayout.VERTICAL);
-
-        final BigGifImageView iv = new BigGifImageView(BigPhotoActivity.this);
-        iv.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.MATCH_PARENT, 1));
+    private LinearLayout setPhoto(LinearLayout l, String path) {
+        final BigGifImageView iv = (BigGifImageView) l.findViewById(R.id.big_photo);
         boolean flag = iv.setImageByPathLoader(path);
-        l.addView(iv);
 
         if (flag) {
             LinearLayout buttonLayout = new LinearLayout(BigPhotoActivity.this);
             buttonLayout.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
-                    LinearLayout.LayoutParams.MATCH_PARENT, 9));
+                    LinearLayout.LayoutParams.WRAP_CONTENT, 1));
             buttonLayout.setGravity(Gravity.CENTER);
             buttonLayout.setOrientation(LinearLayout.HORIZONTAL);
 
@@ -129,7 +121,8 @@ public class BigPhotoActivity extends Activity {
             }
 
             if (path != null) {
-                LinearLayout l = setPhoto(path);
+                LinearLayout l = (LinearLayout) getLayoutInflater().inflate(R.layout.big_photo_item, null);
+                setPhoto(l, path);
                 layout.addView(l);
             }
         } else {
@@ -154,9 +147,11 @@ public class BigPhotoActivity extends Activity {
 
                 @Override
                 public Object instantiateItem(ViewGroup container, int position) {
-                    LinearLayout l = setPhoto(paths.get(position));
+                    LinearLayout l = (LinearLayout) getLayoutInflater().inflate(R.layout.big_photo_item, null);
+                    setPhoto(l, paths.get(position));
 
                     container.addView(l);
+                    l.setTag("layout" + position);
                     //vp.setObjectForPosition(l, position);
                     return l;
                 }
@@ -168,6 +163,17 @@ public class BigPhotoActivity extends Activity {
             });
             layout.addView(vp);
             vp.setCurrentItem(index);
+        }
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+
+        for (int i = 0; i < vp.getChildCount(); i++) {
+            LinearLayout layout = (LinearLayout) vp.getChildAt(i);
+            BigGifImageView iv = (BigGifImageView) layout.findViewById(R.id.big_photo);
+            iv.setImageByPathLoader(iv.getPath());
         }
     }
 }
