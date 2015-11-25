@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.xmx.mygallery.ImageView.BigGifImageView;
 
@@ -25,19 +26,28 @@ public class BigPhotoActivity extends Activity {
     int index;
     boolean flipFlag;
 
-    private LinearLayout setPhoto(LinearLayout l, String path) {
+    private LinearLayout setPhoto(LinearLayout l, String path, int sum, int index) {
         final BigGifImageView iv = (BigGifImageView) l.findViewById(R.id.big_photo);
+
+        TextView tv = (TextView) l.findViewById(R.id.big_photo_index);
+        if (sum <= 0) {
+            l.removeView(tv);
+        } else {
+            tv.setText("" + index + "/" + sum);
+        }
+
         boolean flag = iv.setImageByPathLoader(path);
 
         if (flag) {
             LinearLayout buttonLayout = new LinearLayout(BigPhotoActivity.this);
             buttonLayout.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT, 1));
+                    0, 2));
             buttonLayout.setGravity(Gravity.CENTER);
             buttonLayout.setOrientation(LinearLayout.HORIZONTAL);
 
             Button last = new Button(BigPhotoActivity.this);
             last.setText("后退");
+            last.setTextSize(10);
             last.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
                     LinearLayout.LayoutParams.WRAP_CONTENT));
             last.setOnClickListener(new View.OnClickListener() {
@@ -50,6 +60,7 @@ public class BigPhotoActivity extends Activity {
 
             Button upend = new Button(BigPhotoActivity.this);
             upend.setText("倒放");
+            upend.setTextSize(10);
             upend.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
                     LinearLayout.LayoutParams.WRAP_CONTENT));
             upend.setOnClickListener(new View.OnClickListener() {
@@ -62,6 +73,7 @@ public class BigPhotoActivity extends Activity {
 
             Button pause = new Button(BigPhotoActivity.this);
             pause.setText("暂停");
+            pause.setTextSize(10);
             pause.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
                     LinearLayout.LayoutParams.WRAP_CONTENT));
             pause.setOnClickListener(new View.OnClickListener() {
@@ -74,6 +86,7 @@ public class BigPhotoActivity extends Activity {
 
             Button play = new Button(BigPhotoActivity.this);
             play.setText("播放");
+            play.setTextSize(10);
             play.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
                     LinearLayout.LayoutParams.WRAP_CONTENT));
             play.setOnClickListener(new View.OnClickListener() {
@@ -86,6 +99,7 @@ public class BigPhotoActivity extends Activity {
 
             Button next = new Button(BigPhotoActivity.this);
             next.setText("前进");
+            next.setTextSize(10);
             next.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
                     LinearLayout.LayoutParams.WRAP_CONTENT));
             next.setOnClickListener(new View.OnClickListener() {
@@ -122,7 +136,7 @@ public class BigPhotoActivity extends Activity {
 
             if (path != null) {
                 LinearLayout l = (LinearLayout) getLayoutInflater().inflate(R.layout.big_photo_item, null);
-                setPhoto(l, path);
+                setPhoto(l, path, 0, 0);
                 layout.addView(l);
             }
         } else {
@@ -148,7 +162,7 @@ public class BigPhotoActivity extends Activity {
                 @Override
                 public Object instantiateItem(ViewGroup container, int position) {
                     LinearLayout l = (LinearLayout) getLayoutInflater().inflate(R.layout.big_photo_item, null);
-                    setPhoto(l, paths.get(position));
+                    setPhoto(l, paths.get(position), paths.size(), position + 1);
 
                     container.addView(l);
                     l.setTag("layout" + position);

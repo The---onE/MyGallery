@@ -6,10 +6,18 @@
     android:gravity="center|center_horizontal|center_vertical"
     android:orientation="vertical">
 
+    <TextView
+        android:id="@+id/big_photo_index"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:text="0/0" />
+
     <com.xmx.mygallery.ImageView.BigGifImageView
         android:id="@+id/big_photo"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="8" />
+        android:layout_weight="16" />
 
 </LinearLayout>
