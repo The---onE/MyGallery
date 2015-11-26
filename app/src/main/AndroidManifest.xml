@@ -11,7 +11,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity android:name=".PhotoActivity" />
-        <activity android:name=".BigPhotoActivity"
+        <activity
+            android:name=".BigPhotoActivity"
             android:configChanges="orientation|screenSize">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
