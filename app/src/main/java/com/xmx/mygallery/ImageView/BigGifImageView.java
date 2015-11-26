@@ -95,15 +95,15 @@ public class BigGifImageView extends GifImageView {
             int defaultHeight = MeasureSpec.getSize(heightMeasureSpec);
             int width = (int) (movieWidth * customScale);
 
-            if (width > defaultWidth) {
+            /*if (width > defaultWidth) {
                 width = defaultWidth;
                 customScale = (float) width / (float) movieWidth;
-            }
+            }*/
             mScale = (float) width / (float) movieWidth;
-            if (movieHeight * mScale > defaultHeight) {
+            /*if (movieHeight * mScale > defaultHeight) {
                 mScale = defaultHeight / movieHeight;
                 customScale = mScale;
-            }
+            }*/
 
             mLeft = (defaultWidth - movieWidth * mScale) / 2f;
             mTop = (defaultHeight - movieHeight * mScale) / 2f;
