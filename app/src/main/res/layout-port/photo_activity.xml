@@ -4,16 +4,21 @@
     android:layout_height="fill_parent"
     android:orientation="vertical">
 
+    <TextView
+        android:id="@+id/photo_path"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
     <GridView
         android:id="@+id/photo_gridview"
-        android:layout_width="fill_parent"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:fastScrollEnabled="true"
         android:gravity="center"
         android:horizontalSpacing="2dp"
         android:listSelector="#50000000"
         android:numColumns="4"
         android:scrollbars="vertical"
-        android:verticalSpacing="2dp"
-        android:fastScrollEnabled="true" />
+        android:verticalSpacing="2dp" />
 
 </LinearLayout>
