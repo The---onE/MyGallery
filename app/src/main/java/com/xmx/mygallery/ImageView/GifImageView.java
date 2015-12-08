@@ -104,15 +104,11 @@ public class GifImageView extends ImageView {
 
     public boolean setImageByPathLoader(String path, GifImageLoader.Type type) {
         GifImageLoader.getInstance(5, type).loadImage(path, this);
-        setPath(path);
+        mPath = path;
         BitmapFactory.Options opts = new BitmapFactory.Options();
         opts.inJustDecodeBounds = true;
         BitmapFactory.decodeFile(path, opts);
         return opts.outMimeType != null && opts.outMimeType.equals("image/gif");
-    }
-
-    public void setPath(String path) {
-        mPath = path;
     }
 
     public String getPath() {

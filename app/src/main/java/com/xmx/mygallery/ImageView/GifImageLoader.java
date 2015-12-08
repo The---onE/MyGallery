@@ -209,7 +209,6 @@ public class GifImageLoader {
     public void loadImage(final String path, final GifImageView imageView) {
         // set tag
         imageView.setTag(path);
-        imageView.setPath(getPath(path));
         // UI线程
         if (mHandler == null) {
             mHandler = new LoadImageHandler();

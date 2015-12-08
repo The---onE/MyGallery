@@ -78,7 +78,7 @@ public class BigGifImageView extends GifImageView {
 
     public boolean setImageByPathLoader(String path, GifImageLoader.Type type) {
         GifImageLoader.getInstance(3, type).loadImage(path + "#", this);
-        setPath(path);
+        mPath = path;
         BitmapFactory.Options opts = new BitmapFactory.Options();
         opts.inJustDecodeBounds = true;
         BitmapFactory.decodeFile(path, opts);
