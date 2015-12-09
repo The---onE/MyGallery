@@ -9,16 +9,23 @@ import android.graphics.Movie;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+
 public class GifImageView extends ImageView {
-
     protected static final int DEFAULT_MOVIE_DURATION = 1000;
+    protected static final int DEFAULT_MOVIE_FRAME_TIME = 100;
 
+    protected int mFrameTime = 1;
     protected float customScale = 5f;
     protected String mPath;
-    protected Movie mMovie;
+    //protected Movie mMovie;
+    protected GifDecoder mMovie;
     protected Bitmap mBitmap;
     protected long mMovieStart;
     protected int mCurrentAnimationTime = 0;
@@ -49,14 +56,21 @@ public class GifImageView extends ImageView {
         }
     }
 
-    public void setImageMovie(Movie movie) {
+    //public void setImageMovie(Movie movie) {
+    public void setImageMovie(GifDecoder movie) {
         if (movie != null) {
             mMovie = movie;
             mBitmap = null;
 
-            mDuration = mMovie.duration();
-            if (mDuration == 0) {
-                mDuration = DEFAULT_MOVIE_DURATION;
+            //mDuration = mMovie.duration();
+            mDuration = 0;
+            for (int i = 0; i < mMovie.getFrameCount(); ++i) {
+                mDuration += mMovie.getDelay(i);
+            }
+            mFrameTime = mDuration / mMovie.getFrameCount();
+            if (mFrameTime == 0) {
+                mFrameTime = DEFAULT_MOVIE_FRAME_TIME;
+                mDuration = mFrameTime * mMovie.getFrameCount();
             }
             mLatestTime = android.os.SystemClock.uptimeMillis();
             setupMovie();
@@ -87,11 +101,27 @@ public class GifImageView extends ImageView {
 
     public boolean setImageByPath(String path) {
         mPath = path;
-        Movie movie = Movie.decodeFile(path);
+        //Movie movie = Movie.decodeFile(path);
+        BitmapFactory.Options opts = new BitmapFactory.Options();
+        opts.inJustDecodeBounds = true;
+        BitmapFactory.decodeFile(path, opts);
+        if (opts.outMimeType != null && opts.outMimeType.equals("image/gif")) {
+            GifDecoder gif = new GifDecoder();
+            try {
+                File file = new File(mPath);
+                byte[] bytes = new byte[(int) file.length()];
+                InputStream inputStream = new FileInputStream(file);
+                inputStream.read(bytes);
+                gif.read(bytes);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
-        if (movie != null) {
-            setImageMovie(movie);
+            setImageMovie(gif);
             return true;
+
+            //setImageMovie(movie);
+            //return true;
         } else {
             setImageBitmap(BitmapFactory.decodeFile(path));
             return false;
@@ -301,10 +331,22 @@ public class GifImageView extends ImageView {
     private void drawMovieFrame(Canvas canvas) {
         if (mMovie != null) {
             // 设置要显示的帧，绘制即可
-            mMovie.setTime(mCurrentAnimationTime);
+            int index = mCurrentAnimationTime / mFrameTime;
+            int current = mMovie.getCurrentFrameIndex();
+            if (current != index) {
+                if (current > index) {
+                    index += mMovie.getFrameCount();
+                }
+                for (int i = current; i < index; ++i) {
+                    mMovie.advance();
+                }
+            }
+            Bitmap b = mMovie.getNextFrame();
+            //mMovie.setTime(mCurrentAnimationTime);
             canvas.save(Canvas.MATRIX_SAVE_FLAG);
             canvas.scale(mScale, mScale);
-            mMovie.draw(canvas, mLeft / mScale, mTop / mScale);
+            canvas.drawBitmap(b, mLeft / mScale, mTop / mScale, null);
+            //mMovie.draw(canvas, mLeft / mScale, mTop / mScale);
             canvas.restore();
         }
     }

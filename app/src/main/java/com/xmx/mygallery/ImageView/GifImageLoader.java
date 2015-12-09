@@ -2,8 +2,8 @@ package com.xmx.mygallery.ImageView;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.util.LinkedList;
 import java.util.concurrent.ExecutorService;
@@ -25,7 +25,8 @@ public class GifImageLoader {
 
     class Image {
         Bitmap bitmap;
-        Movie movie;
+        //Movie movie;
+        GifDecoder movie;
     }
 
     private class ImgBeanHolder {
@@ -228,16 +229,31 @@ public class GifImageLoader {
                 @Override
                 public void run() {
                     Image im = new Image();
-                    Movie movie = null;
-                    try {
-                        movie = Movie.decodeStream(new FileInputStream(getPath(path)));
-                    } catch (FileNotFoundException e) {
-                        e.printStackTrace();
-                    }
+                    //Movie movie = null;
+                    //try {
+                    //    movie = Movie.decodeStream(new FileInputStream(getPath(path)));
+                    //} catch (FileNotFoundException e) {
+                    //    e.printStackTrace();
+                    //}
+                    BitmapFactory.Options opts = new BitmapFactory.Options();
+                    opts.inJustDecodeBounds = true;
+                    BitmapFactory.decodeFile(getPath(path), opts);
+                    if (opts.outMimeType != null && opts.outMimeType.equals("image/gif")) {
+                        GifDecoder gif = new GifDecoder();
+                        try {
+                            File file = new File(getPath(path));
+                            byte[] bytes = new byte[(int) file.length()];
+                            InputStream inputStream = new FileInputStream(file);
+                            inputStream.read(bytes);
+                            gif.read(bytes);
+                            im.bitmap = null;
+                            im.movie = gif;
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
 
-                    if (movie != null) {
-                        im.bitmap = null;
-                        im.movie = movie;
+                        //im.bitmap = null;
+                        //im.movie = movie;
                     } else {
                         im.movie = null;
                         //im.bitmap = BitmapFactory.decodeFile(path);

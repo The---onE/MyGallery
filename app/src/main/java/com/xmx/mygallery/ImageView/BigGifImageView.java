@@ -10,13 +10,7 @@ import android.util.DisplayMetrics;
 import android.view.MotionEvent;
 import android.view.View;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-
 public class BigGifImageView extends GifImageView {
-    protected int mFrameTime = 0;
-
     Matrix matrix = new Matrix();
     Matrix savedMatrix = new Matrix();
     /**
@@ -115,19 +109,6 @@ public class BigGifImageView extends GifImageView {
     protected void setupMovie() {
         requestLayout();
         postInvalidate();
-
-        GifDecoder gif = new GifDecoder();
-        File file = new File(mPath);
-        byte[] bytes = new byte[(int) file.length()];
-        try {
-            InputStream inputStream = new FileInputStream(file);
-            inputStream.read(bytes);
-            gif.read(bytes);
-            int frames = gif.getFrameCount();
-            mFrameTime = mDuration / frames;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
 
         this.setOnTouchListener(new OnTouchListener() {
             @Override

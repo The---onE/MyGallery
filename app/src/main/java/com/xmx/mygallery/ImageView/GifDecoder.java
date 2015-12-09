@@ -22,12 +22,13 @@
  */
 package com.xmx.mygallery.ImageView;
 
+import java.io.InputStream;
+
 import android.graphics.Bitmap;
 import android.util.Log;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -37,16 +38,16 @@ import java.util.ArrayList;
  * Reads frame data from a GIF image source and decodes it into individual frames
  * for animation purposes.  Image data can be read from either and InputStream source
  * or a byte[].
- *
+ * <p/>
  * This class is optimized for running animations with the frames, there
  * are no methods to get individual frame images, only to decode the next frame in the
  * animation sequence.  Instead, it lowers its memory footprint by only housing the minimum
  * data necessary to decode the next frame in the animation sequence.
- *
+ * <p/>
  * The animation must be manually moved forward using {@link #advance()} before requesting the next
  * frame.  This method must also be called before you request the first frame or an error will
  * occur.
- *
+ * <p/>
  * Implementation adapted from sample code published in Lyons. (2004). <em>Java for Programmers</em>,
  * republished under the MIT Open Source License
  */
@@ -793,5 +794,13 @@ public class GifDecoder {
         do {
             readBlock();
         } while ((blockSize > 0) && !err());
+    }
+
+    public int width() {
+        return width;
+    }
+
+    public int height() {
+        return height;
     }
 }
