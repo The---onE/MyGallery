@@ -2,6 +2,7 @@ package com.xmx.mygallery.ImageView;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
@@ -25,8 +26,8 @@ public class GifImageLoader {
 
     class Image {
         Bitmap bitmap;
-        //Movie movie;
-        GifDecoder movie;
+        Movie movie;
+        GifDecoder gif;
     }
 
     private class ImgBeanHolder {
@@ -34,6 +35,10 @@ public class GifImageLoader {
         String path;
         Image image;
     }
+
+    static final int GIF_DECODER = 1;
+    static final int MOVIE = 2;
+    int loaderType = MOVIE;
 
     /**
      * 图片缓存的核心类
@@ -155,7 +160,7 @@ public class GifImageLoader {
             protected int sizeOf(String key, Image value) {
                 if (value.bitmap != null) {
                     return value.bitmap.getRowBytes() * value.bitmap.getHeight();
-                } else if (value.movie != null) {
+                } else if (value.gif != null) {
                     try {
                         File f = new File(key);
                         FileInputStream fis = new FileInputStream(f);
@@ -184,10 +189,12 @@ public class GifImageLoader {
             String path = holder.path;
             Image im = holder.image;
             if (imageView.getTag().toString().equals(path)) {
-                if (im.movie != null) {
-                    imageView.setImageMovie(im.movie);
-                } else if (im.bitmap != null) {
+                if (im.bitmap != null) {
                     imageView.setImageBitmap(im.bitmap);
+                } else if (im.gif != null) {
+                    imageView.setImageGif(im.gif);
+                } else if (im.movie != null) {
+                    imageView.setImageMovie(im.movie);
                 }
             }
         }
@@ -207,7 +214,7 @@ public class GifImageLoader {
      * @param path
      * @param imageView
      */
-    public void loadImage(final String path, final GifImageView imageView) {
+    public void loadImage(final String path, final GifImageView imageView, final int loaderType) {
         // set tag
         imageView.setTag(path);
         // UI线程
@@ -216,7 +223,29 @@ public class GifImageLoader {
         }
 
         Image im = getImageFromLruCache(path);
+        boolean existFlag = false;
         if (im != null) {
+            if (im.bitmap != null) {
+                existFlag = true;
+            }
+            else {
+                switch (loaderType) {
+                    case MOVIE:
+                        if (im.movie != null) {
+                            existFlag = true;
+                        }
+                        break;
+
+                    case GIF_DECODER:
+                        if (im.gif != null) {
+                            existFlag = true;
+                        }
+                        break;
+                }
+            }
+        }
+
+        if (existFlag) {
             ImgBeanHolder holder = new ImgBeanHolder();
             holder.image = im;
             holder.imageView = imageView;
@@ -229,32 +258,42 @@ public class GifImageLoader {
                 @Override
                 public void run() {
                     Image im = new Image();
-                    //Movie movie = null;
-                    //try {
-                    //    movie = Movie.decodeStream(new FileInputStream(getPath(path)));
-                    //} catch (FileNotFoundException e) {
-                    //    e.printStackTrace();
-                    //}
                     BitmapFactory.Options opts = new BitmapFactory.Options();
                     opts.inJustDecodeBounds = true;
                     BitmapFactory.decodeFile(getPath(path), opts);
                     if (opts.outMimeType != null && opts.outMimeType.equals("image/gif")) {
-                        GifDecoder gif = new GifDecoder();
-                        try {
-                            File file = new File(getPath(path));
-                            byte[] bytes = new byte[(int) file.length()];
-                            InputStream inputStream = new FileInputStream(file);
-                            inputStream.read(bytes);
-                            gif.read(bytes);
-                            im.bitmap = null;
-                            im.movie = gif;
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
+                        switch (loaderType) {
+                            case MOVIE:
+                                Movie movie = null;
+                                try {
+                                    movie = Movie.decodeStream(new FileInputStream(getPath(path)));
+                                } catch (FileNotFoundException e) {
+                                    e.printStackTrace();
+                                }
 
-                        //im.bitmap = null;
-                        //im.movie = movie;
+                                im.bitmap = null;
+                                im.gif = null;
+                                im.movie = movie;
+                                break;
+
+                            case GIF_DECODER:
+                                GifDecoder gif = new GifDecoder();
+                                try {
+                                    File file = new File(getPath(path));
+                                    byte[] bytes = new byte[(int) file.length()];
+                                    InputStream inputStream = new FileInputStream(file);
+                                    inputStream.read(bytes);
+                                    gif.read(bytes);
+                                    im.bitmap = null;
+                                    im.movie = null;
+                                    im.gif = gif;
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                                break;
+                        }
                     } else {
+                        im.gif = null;
                         im.movie = null;
                         //im.bitmap = BitmapFactory.decodeFile(path);
                         ImageSize imageSize = getImageViewWidth(imageView);
@@ -326,6 +365,12 @@ public class GifImageLoader {
         if (getImageFromLruCache(key) == null) {
             if (im != null)
                 mLruCache.put(key, im);
+        }
+        else {
+            if (im != null) {
+                mLruCache.remove(key);
+                mLruCache.put(key, im);
+            }
         }
     }
 

@@ -10,6 +10,10 @@ import android.util.DisplayMetrics;
 import android.view.MotionEvent;
 import android.view.View;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+
 public class BigGifImageView extends GifImageView {
     Matrix matrix = new Matrix();
     Matrix savedMatrix = new Matrix();
@@ -71,7 +75,7 @@ public class BigGifImageView extends GifImageView {
     }
 
     public boolean setImageByPathLoader(String path, GifImageLoader.Type type) {
-        GifImageLoader.getInstance(3, type).loadImage(path + "#", this);
+        GifImageLoader.getInstance(3, type).loadImage(path + "#", this, loaderType);
         mPath = path;
         BitmapFactory.Options opts = new BitmapFactory.Options();
         opts.inJustDecodeBounds = true;
@@ -82,9 +86,16 @@ public class BigGifImageView extends GifImageView {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        if (mMovie != null) {
-            int movieWidth = mMovie.width();
-            int movieHeight = mMovie.height();
+        if (mGif != null || mMovie != null) {
+            int movieWidth = 1;
+            int movieHeight = 1;
+            if (mGif != null) {
+                movieWidth = mGif.width();
+                movieHeight = mGif.height();
+            } else {
+                movieWidth = mMovie.width();
+                movieHeight = mMovie.height();
+            }
             int defaultWidth = MeasureSpec.getSize(widthMeasureSpec);
             int defaultHeight = MeasureSpec.getSize(heightMeasureSpec);
             int width = (int) (movieWidth * customScale);
@@ -109,6 +120,20 @@ public class BigGifImageView extends GifImageView {
     protected void setupMovie() {
         requestLayout();
         postInvalidate();
+
+        if (loaderType == MOVIE) {
+            GifDecoder gif = new GifDecoder();
+            try {
+                File file = new File(mPath);
+                byte[] bytes = new byte[(int) file.length()];
+                InputStream inputStream = new FileInputStream(file);
+                inputStream.read(bytes);
+                gif.read(bytes);
+                mFrameTime = mDuration / gif.getFrameCount();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
 
         this.setOnTouchListener(new OnTouchListener() {
             @Override
