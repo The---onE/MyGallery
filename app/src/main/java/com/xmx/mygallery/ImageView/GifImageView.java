@@ -2,6 +2,7 @@ package com.xmx.mygallery.ImageView;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -22,7 +23,7 @@ public class GifImageView extends ImageView {
 
     static final int GIF_DECODER = 1;
     static final int MOVIE = 2;
-    int loaderType = MOVIE;
+    int loaderType;
 
     protected int mFrameTime = 1;
     protected float customScale = 5f;
@@ -54,9 +55,15 @@ public class GifImageView extends ImageView {
 
     public GifImageView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
+        loadLoaderType();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
             setLayerType(View.LAYER_TYPE_SOFTWARE, null);
         }
+    }
+
+    protected void loadLoaderType() {
+        SharedPreferences sp = getContext().getSharedPreferences("LOADER", Context.MODE_PRIVATE);
+        loaderType = sp.getInt("loaderType", MOVIE);
     }
 
     public void setImageMovie(Movie movie) {
@@ -144,7 +151,7 @@ public class GifImageView extends ImageView {
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-                break;
+                    break;
             }
             return true;
         } else {

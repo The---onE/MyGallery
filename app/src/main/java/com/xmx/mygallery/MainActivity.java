@@ -1,16 +1,16 @@
 package com.xmx.mygallery;
 
-import android.content.Intent;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 
 public class MainActivity extends AppCompatActivity {
+    static final int GIF_DECODER = 1;
+    static final int MOVIE = 2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,6 +24,19 @@ public class MainActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
+
+        MenuItem loaderType = menu.findItem(R.id.loader_type);
+        SharedPreferences sp = getSharedPreferences("LOADER", Context.MODE_PRIVATE);
+        int type = sp.getInt("loaderType", MOVIE);
+        switch (type) {
+            case MOVIE:
+                loaderType.setTitle("Gif loader:Movie mode");
+                break;
+            case GIF_DECODER:
+                loaderType.setTitle("Gif loader:GifDecoder mode");
+                break;
+        }
+
         return true;
     }
 
@@ -35,7 +48,21 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.loader_type) {
+            SharedPreferences sp = getSharedPreferences("LOADER", Context.MODE_PRIVATE);
+            int type = sp.getInt("loaderType", MOVIE);
+            SharedPreferences.Editor editor = sp.edit();
+            switch (type) {
+                case MOVIE:
+                    editor.putInt("loaderType", GIF_DECODER);
+                    item.setTitle("Gif loader:GifDecoder mode");
+                    break;
+                case GIF_DECODER:
+                    editor.putInt("loaderType", MOVIE);
+                    item.setTitle("Gif loader:Movie mode");
+                    break;
+            }
+            editor.apply();
             return true;
         }
 
