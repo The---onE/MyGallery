@@ -1,6 +1,7 @@
 package com.xmx.mygallery;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -63,6 +64,9 @@ public class MainActivity extends AppCompatActivity {
                     break;
             }
             editor.apply();
+            finish();
+            Intent intent = new Intent(MainActivity.this, MainActivity.class);
+            startActivity(intent);
             return true;
         }
 
