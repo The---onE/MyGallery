@@ -2,6 +2,7 @@ package com.xmx.mygallery;
 
 import android.app.Activity;
 import android.content.res.Configuration;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.view.PagerAdapter;
@@ -16,6 +17,7 @@ import android.widget.TextView;
 
 import com.xmx.mygallery.ImageView.BigGifImageView;
 
+import java.io.File;
 import java.util.ArrayList;
 
 public class BigPhotoActivity extends Activity {
@@ -25,7 +27,6 @@ public class BigPhotoActivity extends Activity {
     String path;
     ArrayList<String> paths;
     int index;
-    boolean flipFlag;
 
     private RelativeLayout setPhoto(RelativeLayout l, String path, int sum, int index) {
 
@@ -34,6 +35,14 @@ public class BigPhotoActivity extends Activity {
             l.removeView(tv);
         } else {
             tv.setText("" + index + "/" + sum);
+        }
+
+        TextView name = (TextView) l.findViewById(R.id.big_photo_name);
+        int end = path.lastIndexOf("/");
+        if (end != -1) {
+            name.setText(path.substring(end + 1));
+        } else {
+            name.setText(null);
         }
 
         final BigGifImageView iv = (BigGifImageView) l.findViewById(R.id.big_photo);
@@ -86,6 +95,13 @@ public class BigPhotoActivity extends Activity {
         return l;
     }
 
+    protected boolean checkIsImage(String path) {
+        BitmapFactory.Options opts = new BitmapFactory.Options();
+        opts.inJustDecodeBounds = true;
+        BitmapFactory.decodeFile(path, opts);
+        return opts.outMimeType != null;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -94,28 +110,40 @@ public class BigPhotoActivity extends Activity {
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         layout = (LinearLayout) (findViewById(R.id.photo_layout));
 
+        paths = new ArrayList<>();
         index = getIntent().getIntExtra("index", -1);
 
         if (index == -1) {
-            flipFlag = false;
             path = getIntent().getStringExtra("path");
             if (path == null) {
-                path = getIntent().getData().toString();
-                if (path != null) {
-                    Uri uri = getIntent().getData();
+                Uri uri = getIntent().getData();
+                if (uri != null) {
                     path = uri.getPath();
                 }
             }
 
             if (path != null) {
-                RelativeLayout l = (RelativeLayout) getLayoutInflater().inflate(R.layout.big_photo_item, null);
-                setPhoto(l, path, 0, 0);
-                layout.addView(l);
+                int end = path.lastIndexOf("/");
+                if (end != -1) {
+                    String dir;
+                    dir = path.substring(0, end);
+
+                    File fileDir = new File(dir);
+                    File[] files = fileDir.listFiles();
+                    for (File file : files) {
+                        String s = file.getPath();
+                        if (checkIsImage(s)) {
+                            paths.add(s);
+                        }
+                    }
+                    index = paths.indexOf(path);
+                }
             }
         } else {
-            flipFlag = true;
             paths = getIntent().getStringArrayListExtra("paths");
+        }
 
+        if (paths.size() > 1 && index != -1) {
             //vp = new JazzyViewPager(this);
             vp = new ViewPager(this);
             vp.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
@@ -150,6 +178,10 @@ public class BigPhotoActivity extends Activity {
             });
             layout.addView(vp);
             vp.setCurrentItem(index);
+        } else {
+            RelativeLayout l = (RelativeLayout) getLayoutInflater().inflate(R.layout.big_photo_item, null);
+            setPhoto(l, path, 0, 0);
+            layout.addView(l);
         }
     }
 

@@ -16,6 +16,14 @@
         android:gravity="center"
         android:text="0/0" />
 
+    <TextView
+        android:id="@+id/big_photo_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/big_photo_index"
+        android:gravity="center"
+        android:text="@string/default_string" />
+
     <LinearLayout
         android:id="@+id/big_photo_button"
         android:layout_width="match_parent"
