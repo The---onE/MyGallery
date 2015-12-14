@@ -141,6 +141,7 @@ public class BigPhotoActivity extends Activity {
             }
         } else {
             paths = getIntent().getStringArrayListExtra("paths");
+            path = paths.get(index);
         }
 
         if (paths.size() > 1 && index != -1) {
