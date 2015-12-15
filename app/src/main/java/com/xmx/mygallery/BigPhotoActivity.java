@@ -48,11 +48,30 @@ public class BigPhotoActivity extends Activity {
         final BigGifImageView iv = (BigGifImageView) l.findViewById(R.id.big_photo);
         boolean flag = iv.setImageByPathLoader(path);
 
-        LinearLayout buttonLayout = (LinearLayout) l.findViewById(R.id.big_photo_button);
+        LinearLayout gifButtons = (LinearLayout) l.findViewById(R.id.big_photo_gif_button);
+        LinearLayout photoButtons = (LinearLayout) l.findViewById(R.id.big_photo_photo_button);
         if (!flag) {
-            l.removeView(buttonLayout);
+            l.removeView(gifButtons);
+
+            Button anticlockwise = (Button) photoButtons.findViewById(R.id.big_photo_anticlockwise);
+            anticlockwise.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    iv.anticlockwiseRotation();
+                }
+            });
+
+            Button clockwise = (Button) photoButtons.findViewById(R.id.big_photo_clockwise);
+            clockwise.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    iv.clockwiseRotation();
+                }
+            });
         } else {
-            Button last = (Button) buttonLayout.findViewById(R.id.big_photo_last);
+            l.removeView(photoButtons);
+
+            Button last = (Button) gifButtons.findViewById(R.id.big_photo_last);
             last.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -60,7 +79,7 @@ public class BigPhotoActivity extends Activity {
                 }
             });
 
-            Button upend = (Button) buttonLayout.findViewById(R.id.big_photo_upend);
+            Button upend = (Button) gifButtons.findViewById(R.id.big_photo_upend);
             upend.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -68,7 +87,7 @@ public class BigPhotoActivity extends Activity {
                 }
             });
 
-            Button pause = (Button) buttonLayout.findViewById(R.id.big_photo_pause);
+            Button pause = (Button) gifButtons.findViewById(R.id.big_photo_pause);
             pause.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -76,7 +95,7 @@ public class BigPhotoActivity extends Activity {
                 }
             });
 
-            Button play = (Button) buttonLayout.findViewById(R.id.big_photo_play);
+            Button play = (Button) gifButtons.findViewById(R.id.big_photo_play);
             play.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -84,7 +103,7 @@ public class BigPhotoActivity extends Activity {
                 }
             });
 
-            Button next = (Button) buttonLayout.findViewById(R.id.big_photo_next);
+            Button next = (Button) gifButtons.findViewById(R.id.big_photo_next);
             next.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {

@@ -2,6 +2,8 @@
     <string name="app_name">MyGallery</string>
     <string name="action_settings">Settings</string>
     <string name="default_string">Loading&#8230;</string>
+    <string name="clockwise">顺时针</string>
+    <string name="anticlockwise">逆时针</string>
     <string name="last">后退</string>
     <string name="upend">倒放</string>
     <string name="pause">暂停</string>

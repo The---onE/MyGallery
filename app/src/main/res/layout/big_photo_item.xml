@@ -25,7 +25,7 @@
         android:text="@string/default_string" />
 
     <LinearLayout
-        android:id="@+id/big_photo_button"
+        android:id="@+id/big_photo_gif_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
@@ -65,6 +65,30 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/next"
+            android:textSize="12sp" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/big_photo_photo_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/big_photo_anticlockwise"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/anticlockwise"
+            android:textSize="12sp" />
+
+        <Button
+            android:id="@+id/big_photo_clockwise"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/clockwise"
             android:textSize="12sp" />
 
     </LinearLayout>

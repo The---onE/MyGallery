@@ -17,6 +17,7 @@ import java.io.InputStream;
 public class BigGifImageView extends GifImageView {
     Matrix matrix = new Matrix();
     Matrix savedMatrix = new Matrix();
+    int rotate = 0;
     /**
      * 屏幕的分辨率
      */
@@ -325,6 +326,20 @@ public class BigGifImageView extends GifImageView {
         float x = event.getX(0) + event.getX(1);
         float y = event.getY(0) + event.getY(1);
         point.set(x / 2, y / 2);
+    }
+
+    public void clockwiseRotation() {
+        if (matrix != null) {
+            rotate += 90;
+            this.setRotation(rotate);
+        }
+    }
+
+    public void anticlockwiseRotation() {
+        if (matrix != null) {
+            rotate -= 90;
+            this.setRotation(rotate);
+        }
     }
 
     public void play() {
