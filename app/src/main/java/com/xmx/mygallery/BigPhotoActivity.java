@@ -49,27 +49,27 @@ public class BigPhotoActivity extends Activity {
         boolean flag = iv.setImageByPathLoader(path);
 
         LinearLayout gifButtons = (LinearLayout) l.findViewById(R.id.big_photo_gif_button);
-        LinearLayout photoButtons = (LinearLayout) l.findViewById(R.id.big_photo_photo_button);
+        RelativeLayout photoButtons = (RelativeLayout) l.findViewById(R.id.big_photo_photo_button);
+
+        Button anticlockwise = (Button) photoButtons.findViewById(R.id.big_photo_anticlockwise);
+        anticlockwise.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                iv.anticlockwiseRotation();
+            }
+        });
+
+        Button clockwise = (Button) photoButtons.findViewById(R.id.big_photo_clockwise);
+        clockwise.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                iv.clockwiseRotation();
+            }
+        });
+
         if (!flag) {
             l.removeView(gifButtons);
-
-            Button anticlockwise = (Button) photoButtons.findViewById(R.id.big_photo_anticlockwise);
-            anticlockwise.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    iv.anticlockwiseRotation();
-                }
-            });
-
-            Button clockwise = (Button) photoButtons.findViewById(R.id.big_photo_clockwise);
-            clockwise.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    iv.clockwiseRotation();
-                }
-            });
         } else {
-            l.removeView(photoButtons);
 
             Button last = (Button) gifButtons.findViewById(R.id.big_photo_last);
             last.setOnClickListener(new View.OnClickListener() {

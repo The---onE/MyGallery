@@ -28,7 +28,7 @@
         android:id="@+id/big_photo_gif_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
+        android:layout_above="@+id/big_photo_photo_button"
         android:gravity="center"
         android:orientation="horizontal">
 
@@ -69,18 +69,18 @@
 
     </LinearLayout>
 
-    <LinearLayout
+    <RelativeLayout
         android:id="@+id/big_photo_photo_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:gravity="center"
-        android:orientation="horizontal">
+        android:layout_alignParentBottom="true">
 
         <Button
             android:id="@+id/big_photo_anticlockwise"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
             android:text="@string/anticlockwise"
             android:textSize="12sp" />
 
@@ -88,9 +88,11 @@
             android:id="@+id/big_photo_clockwise"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
             android:text="@string/clockwise"
             android:textSize="12sp" />
 
-    </LinearLayout>
+    </RelativeLayout>
 
 </RelativeLayout>
