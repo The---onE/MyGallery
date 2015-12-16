@@ -6,7 +6,8 @@
     <com.xmx.mygallery.ImageView.BigGifImageView
         android:id="@+id/big_photo"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:layout_centerInParent="true" />
 
     <TextView
         android:id="@+id/big_photo_index"

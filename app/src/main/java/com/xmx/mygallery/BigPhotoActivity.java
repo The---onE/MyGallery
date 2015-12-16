@@ -5,8 +5,10 @@ import android.content.res.Configuration;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -21,12 +23,13 @@ import java.io.File;
 import java.util.ArrayList;
 
 public class BigPhotoActivity extends Activity {
-    LinearLayout layout;
+    RelativeLayout layout;
     //JazzyViewPager vp;
     ViewPager vp;
     String path;
     ArrayList<String> paths;
     int index;
+    boolean playFlag = false;
 
     private RelativeLayout setPhoto(RelativeLayout l, String path, int sum, int index) {
 
@@ -127,7 +130,7 @@ public class BigPhotoActivity extends Activity {
         setContentView(R.layout.big_photo_activity);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        layout = (LinearLayout) (findViewById(R.id.photo_layout));
+        layout = (RelativeLayout) (findViewById(R.id.photo_layout));
 
         paths = new ArrayList<>();
         index = getIntent().getIntExtra("index", -1);
@@ -166,8 +169,11 @@ public class BigPhotoActivity extends Activity {
         if (paths.size() > 1 && index != -1) {
             //vp = new JazzyViewPager(this);
             vp = new ViewPager(this);
-            vp.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
-                    LinearLayout.LayoutParams.MATCH_PARENT));
+            RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.MATCH_PARENT);
+            params.addRule(RelativeLayout.CENTER_IN_PARENT);
+            vp.setLayoutParams(params);
+
             //vp.setTransitionEffect(JazzyViewPager.TransitionEffect.Accordion);
             vp.setAdapter(new PagerAdapter() {
                 @Override
@@ -198,6 +204,78 @@ public class BigPhotoActivity extends Activity {
             });
             layout.addView(vp);
             vp.setCurrentItem(index);
+
+            LinearLayout buttonLayout = new LinearLayout(this);
+            RelativeLayout.LayoutParams p = new RelativeLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT);
+            p.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+            buttonLayout.setLayoutParams(p);
+            buttonLayout.setGravity(Gravity.CENTER);
+            buttonLayout.setOrientation(LinearLayout.HORIZONTAL);
+
+            Button nextPage = new Button(this);
+            nextPage.setLayoutParams(new RelativeLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT));
+            nextPage.setText("上一页");
+            nextPage.setTextSize(12);
+            nextPage.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    int cp = vp.getCurrentItem();
+                    cp = (cp - 1 + paths.size()) % paths.size();
+                    vp.setCurrentItem(cp);
+                }
+            });
+            buttonLayout.addView(nextPage);
+
+            final Handler handler = new Handler();
+            final Runnable runnable = new Runnable() {
+                @Override
+                public void run() {
+                    int cp = vp.getCurrentItem();
+                    cp = (cp + 1) % paths.size();
+                    vp.setCurrentItem(cp);
+                    handler.postDelayed(this, 1000);
+                }
+            };
+            Button autoPlay = new Button(this);
+            autoPlay.setLayoutParams(new RelativeLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT));
+            autoPlay.setText("播放");
+            autoPlay.setTextSize(12);
+            autoPlay.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (!playFlag) {
+                        handler.postDelayed(runnable, 1000);
+                        ((Button) v).setText("停止");
+                        playFlag = true;
+                    } else {
+                        handler.removeCallbacks(runnable);
+                        ((Button) v).setText("播放");
+                        playFlag = false;
+                    }
+                }
+            });
+            buttonLayout.addView(autoPlay);
+
+            Button lastPage = new Button(this);
+            lastPage.setLayoutParams(new RelativeLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT));
+            lastPage.setText("下一页");
+            lastPage.setTextSize(12);
+            lastPage.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    int cp = vp.getCurrentItem();
+                    cp = (cp + 1) % paths.size();
+                    vp.setCurrentItem(cp);
+                }
+            });
+            buttonLayout.addView(lastPage);
+
+            layout.addView(buttonLayout);
+
         } else {
             RelativeLayout l = (RelativeLayout) getLayoutInflater().inflate(R.layout.big_photo_item, null);
             setPhoto(l, path, 0, 0);
