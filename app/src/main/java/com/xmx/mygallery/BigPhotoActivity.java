@@ -19,9 +19,11 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.xmx.mygallery.Entities.FixedSpeedScroller;
 import com.xmx.mygallery.ImageView.BigGifImageView;
 
 import java.io.File;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 
 public class BigPhotoActivity extends Activity {
@@ -175,6 +177,14 @@ public class BigPhotoActivity extends Activity {
                     LinearLayout.LayoutParams.MATCH_PARENT);
             params.addRule(RelativeLayout.CENTER_IN_PARENT);
             vp.setLayoutParams(params);
+
+            try {
+                Field mScroller = ViewPager.class.getDeclaredField("mScroller");
+                mScroller.setAccessible(true);
+                FixedSpeedScroller scroller = new FixedSpeedScroller(vp.getContext());
+                mScroller.set(vp, scroller);
+            } catch (Exception e) {
+            }
 
             //vp.setTransitionEffect(JazzyViewPager.TransitionEffect.Accordion);
             vp.setAdapter(new PagerAdapter() {
