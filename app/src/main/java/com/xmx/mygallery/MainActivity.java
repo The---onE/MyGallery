@@ -11,12 +11,12 @@ import android.support.v7.widget.Toolbar;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.EditText;
 import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
     static final int GIF_DECODER = 1;
     static final int MOVIE = 2;
-    private int loaderType;
     private int selected;
     private long exitTime = 0;
     static long LONGEST_EXIT_TIME = 2000;
@@ -34,41 +34,29 @@ public class MainActivity extends AppCompatActivity {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
 
-        MenuItem loaderItem = menu.findItem(R.id.loader_type);
-        loaderItem.setTitle("Gif Loader Mode");
-        SharedPreferences sp = getSharedPreferences("LOADER", Context.MODE_PRIVATE);
-        loaderType = sp.getInt("loaderType", MOVIE);
-        /*switch (type) {
-            case MOVIE:
-                loaderItem.setTitle("Gif loader:Movie mode");
-                break;
-            case GIF_DECODER:
-                loaderItem.setTitle("Gif loader:GifDecoder mode");
-                break;
-        }*/
-
         return true;
     }
 
     private void loaderTypeDialog() {
-        AlertDialog.Builder dialog = new AlertDialog.Builder(this);
-        int type = getSharedPreferences("LOADER", Context.MODE_PRIVATE).getInt("loaderType", MOVIE);
-        dialog.setTitle("Gif Loader")
-                .setSingleChoiceItems(
-                        new String[]{"GifDecoder Mode", "Movie Mode"}, type - 1,
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                selected = which;
-                            }
-                        })
+        AlertDialog.Builder gifLoaderDialog = new AlertDialog.Builder(this);
+        final int type = getSharedPreferences("LOADER", Context.MODE_PRIVATE).getInt("loaderType", MOVIE);
+        selected = type - 1;
+        gifLoaderDialog.setSingleChoiceItems(
+                new String[]{"GifDecoder Mode", "Movie Mode"}, selected,
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        selected = which;
+                    }
+                })
+                .setTitle(R.string.gif_loader)
                 .setNegativeButton("Cancel", null)
                 .setPositiveButton("OK",
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 int choose = selected + 1;
-                                if (choose != loaderType) {
+                                if (choose != type) {
                                     SharedPreferences sp = getSharedPreferences("LOADER", Context.MODE_PRIVATE);
                                     SharedPreferences.Editor editor = sp.edit();
                                     editor.putInt("loaderType", choose);
@@ -79,38 +67,45 @@ public class MainActivity extends AppCompatActivity {
                                 }
                             }
                         }).show();
+    }
 
+    private void flipIntervalDialog() {
+        AlertDialog.Builder flipIntervalDialog = new AlertDialog.Builder(this);
+        int interval = getSharedPreferences("FLIP", Context.MODE_PRIVATE).getInt("FlipInterval", 1000);
+        final EditText intervalEdit = new EditText(this);
+        intervalEdit.setText("" + interval);
+        flipIntervalDialog.setView(intervalEdit)
+                .setTitle(R.string.flip_interval)
+                .setIcon(android.R.drawable.ic_dialog_info)
+                .setNegativeButton("Cancel", null)
+                .setPositiveButton("OK",
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                String s = intervalEdit.getText().toString();
+                                try {
+                                    int interval = Integer.parseInt(s);
+                                    SharedPreferences sp = getSharedPreferences("FLIP", Context.MODE_PRIVATE);
+                                    SharedPreferences.Editor editor = sp.edit();
+                                    editor.putInt("FlipInterval", interval);
+                                    editor.apply();
+                                } catch (Exception e) {
+                                    Toast.makeText(getApplicationContext(), "必须输入数字！", Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                        }).show();
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.loader_type) {
-            SharedPreferences sp = getSharedPreferences("LOADER", Context.MODE_PRIVATE);
-            int type = sp.getInt("loaderType", MOVIE);
-
             loaderTypeDialog();
-
-            /*SharedPreferences.Editor editor = sp.edit();
-            switch (type) {
-                case MOVIE:
-                    editor.putInt("loaderType", GIF_DECODER);
-                    item.setTitle("Gif loader:GifDecoder mode");
-                    break;
-                case GIF_DECODER:
-                    editor.putInt("loaderType", MOVIE);
-                    item.setTitle("Gif loader:Movie mode");
-                    break;
-            }
-            editor.apply();
-            finish();
-            Intent intent = new Intent(MainActivity.this, MainActivity.class);
-            startActivity(intent);*/
+            return true;
+        } else if (id == R.id.flip_interval) {
+            flipIntervalDialog();
             return true;
         }
 

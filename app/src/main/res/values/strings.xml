@@ -9,4 +9,6 @@
     <string name="pause">暂停</string>
     <string name="play">播放</string>
     <string name="next">前进</string>
+    <string name="gif_loader">GIF读取模式</string>
+    <string name="flip_interval">自动翻页间隔(ms)</string>
 </resources>

@@ -1,6 +1,8 @@
 package com.xmx.mygallery;
 
 import android.app.Activity;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -228,6 +230,8 @@ public class BigPhotoActivity extends Activity {
             });
             buttonLayout.addView(nextPage);
 
+            SharedPreferences sp = getSharedPreferences("FLIP", Context.MODE_PRIVATE);
+            final int interval = sp.getInt("FlipInterval", 1000);
             final Handler handler = new Handler();
             final Runnable runnable = new Runnable() {
                 @Override
@@ -235,7 +239,7 @@ public class BigPhotoActivity extends Activity {
                     int cp = vp.getCurrentItem();
                     cp = (cp + 1) % paths.size();
                     vp.setCurrentItem(cp);
-                    handler.postDelayed(this, 1000);
+                    handler.postDelayed(this, interval);
                 }
             };
             Button autoPlay = new Button(this);
@@ -247,7 +251,7 @@ public class BigPhotoActivity extends Activity {
                 @Override
                 public void onClick(View v) {
                     if (!playFlag) {
-                        handler.postDelayed(runnable, 1000);
+                        handler.postDelayed(runnable, interval);
                         ((Button) v).setText("停止");
                         playFlag = true;
                     } else {
