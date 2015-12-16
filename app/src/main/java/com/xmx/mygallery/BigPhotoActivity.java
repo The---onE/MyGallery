@@ -17,6 +17,7 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.Scroller;
 import android.widget.TextView;
 
 import com.xmx.mygallery.Entities.FixedSpeedScroller;
@@ -178,14 +179,6 @@ public class BigPhotoActivity extends Activity {
             params.addRule(RelativeLayout.CENTER_IN_PARENT);
             vp.setLayoutParams(params);
 
-            try {
-                Field mScroller = ViewPager.class.getDeclaredField("mScroller");
-                mScroller.setAccessible(true);
-                FixedSpeedScroller scroller = new FixedSpeedScroller(vp.getContext());
-                mScroller.set(vp, scroller);
-            } catch (Exception e) {
-            }
-
             //vp.setTransitionEffect(JazzyViewPager.TransitionEffect.Accordion);
             vp.setAdapter(new PagerAdapter() {
                 @Override
@@ -263,10 +256,24 @@ public class BigPhotoActivity extends Activity {
                     if (!playFlag) {
                         handler.postDelayed(runnable, interval);
                         ((Button) v).setText("停止");
+                        try {
+                            Field mScroller = ViewPager.class.getDeclaredField("mScroller");
+                            mScroller.setAccessible(true);
+                            FixedSpeedScroller scroller = new FixedSpeedScroller(vp.getContext());
+                            mScroller.set(vp, scroller);
+                        } catch (Exception e) {
+                        }
                         playFlag = true;
                     } else {
                         handler.removeCallbacks(runnable);
                         ((Button) v).setText("播放");
+                        try {
+                            Field mScroller = ViewPager.class.getDeclaredField("mScroller");
+                            mScroller.setAccessible(true);
+                            Scroller scroller = new Scroller(vp.getContext());
+                            mScroller.set(vp, scroller);
+                        } catch (Exception e) {
+                        }
                         playFlag = false;
                     }
                 }
