@@ -2,13 +2,17 @@
     <string name="app_name">MyGallery</string>
     <string name="action_settings">Settings</string>
     <string name="default_string">Loading&#8230;</string>
-    <string name="clockwise">顺时针</string>
-    <string name="anticlockwise">逆时针</string>
+    <string name="clockwise">顺</string>
+    <string name="anticlockwise">逆</string>
     <string name="last">后退</string>
     <string name="upend">倒放</string>
     <string name="pause">暂停</string>
-    <string name="play">播放</string>
+    <string name="play">正放</string>
     <string name="next">前进</string>
     <string name="gif_loader">GIF读取模式</string>
     <string name="flip_interval">自动翻页间隔(ms)</string>
+    <string name="last_page">上页</string>
+    <string name="auto_flip">播放</string>
+    <string name="stop_auto_flip">停止</string>
+    <string name="next_page">下页</string>
 </resources>

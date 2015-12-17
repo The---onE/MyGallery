@@ -6,4 +6,42 @@
     android:gravity="center|center_horizontal|center_vertical"
     android:orientation="vertical">
 
+    <android.support.v4.view.ViewPager
+        android:id="@+id/big_photo_viewpager"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_centerInParent="true" />
+
+    <LinearLayout
+        android:id="@+id/big_photo_flip_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/big_photo_last_page"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/last_page"
+            android:textSize="12sp" />
+
+        <Button
+            android:id="@+id/big_photo_auto_flip"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/auto_flip"
+            android:textSize="12sp" />
+
+        <Button
+            android:id="@+id/big_photo_next_page"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/next_page"
+            android:textSize="12sp" />
+
+
+    </LinearLayout>
+
 </RelativeLayout>

@@ -10,7 +10,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -129,6 +128,38 @@ public class BigPhotoActivity extends Activity {
         return opts.outMimeType != null;
     }
 
+    private void setFlipDuration() {
+        try {
+            Field mScroller = ViewPager.class.getDeclaredField("mScroller");
+            mScroller.setAccessible(true);
+            Scroller scroller = new Scroller(vp.getContext());
+            mScroller.set(vp, scroller);
+        } catch (Exception e) {
+        }
+    }
+
+    private void cancelFlipDuration() {
+        try {
+            Field mScroller = ViewPager.class.getDeclaredField("mScroller");
+            mScroller.setAccessible(true);
+            FixedSpeedScroller scroller = new FixedSpeedScroller(vp.getContext());
+            mScroller.set(vp, scroller);
+        } catch (Exception e) {
+        }
+    }
+
+    private void nextPage() {
+        int cp = vp.getCurrentItem();
+        cp = (cp + 1) % paths.size();
+        vp.setCurrentItem(cp);
+    }
+
+    private void lastPage() {
+        int cp = vp.getCurrentItem();
+        cp = (cp - 1 + paths.size()) % paths.size();
+        vp.setCurrentItem(cp);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -173,11 +204,7 @@ public class BigPhotoActivity extends Activity {
 
         if (paths.size() > 1 && index != -1) {
             //vp = new JazzyViewPager(this);
-            vp = new ViewPager(this);
-            RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
-                    LinearLayout.LayoutParams.MATCH_PARENT);
-            params.addRule(RelativeLayout.CENTER_IN_PARENT);
-            vp.setLayoutParams(params);
+            vp = (ViewPager) layout.findViewById(R.id.big_photo_viewpager);
 
             //vp.setTransitionEffect(JazzyViewPager.TransitionEffect.Accordion);
             vp.setAdapter(new PagerAdapter() {
@@ -207,31 +234,17 @@ public class BigPhotoActivity extends Activity {
                     return paths.size();
                 }
             });
-            layout.addView(vp);
             vp.setCurrentItem(index);
 
-            LinearLayout buttonLayout = new LinearLayout(this);
-            RelativeLayout.LayoutParams p = new RelativeLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT);
-            p.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-            buttonLayout.setLayoutParams(p);
-            buttonLayout.setGravity(Gravity.CENTER);
-            buttonLayout.setOrientation(LinearLayout.HORIZONTAL);
+            LinearLayout buttonLayout = (LinearLayout) layout.findViewById(R.id.big_photo_flip_button);
 
-            Button nextPage = new Button(this);
-            nextPage.setLayoutParams(new RelativeLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT));
-            nextPage.setText("上一页");
-            nextPage.setTextSize(12);
-            nextPage.setOnClickListener(new View.OnClickListener() {
+            Button lastPage = (Button) buttonLayout.findViewById(R.id.big_photo_last_page);
+            lastPage.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    int cp = vp.getCurrentItem();
-                    cp = (cp - 1 + paths.size()) % paths.size();
-                    vp.setCurrentItem(cp);
+                    lastPage();
                 }
             });
-            buttonLayout.addView(nextPage);
 
             SharedPreferences sp = getSharedPreferences("FLIP", Context.MODE_PRIVATE);
             final int interval = sp.getInt("FlipInterval", 1000);
@@ -239,65 +252,42 @@ public class BigPhotoActivity extends Activity {
             final Runnable runnable = new Runnable() {
                 @Override
                 public void run() {
-                    int cp = vp.getCurrentItem();
-                    cp = (cp + 1) % paths.size();
-                    vp.setCurrentItem(cp);
+                    nextPage();
                     handler.postDelayed(this, interval);
                 }
             };
-            Button autoPlay = new Button(this);
-            autoPlay.setLayoutParams(new RelativeLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT));
-            autoPlay.setText("播放");
-            autoPlay.setTextSize(12);
+            Button autoPlay = (Button) buttonLayout.findViewById(R.id.big_photo_auto_flip);
             autoPlay.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     if (!playFlag) {
                         handler.postDelayed(runnable, interval);
-                        ((Button) v).setText("停止");
-                        try {
-                            Field mScroller = ViewPager.class.getDeclaredField("mScroller");
-                            mScroller.setAccessible(true);
-                            FixedSpeedScroller scroller = new FixedSpeedScroller(vp.getContext());
-                            mScroller.set(vp, scroller);
-                        } catch (Exception e) {
-                        }
+                        ((Button) v).setText(R.string.stop_auto_flip);
+                        cancelFlipDuration();
                         playFlag = true;
                     } else {
                         handler.removeCallbacks(runnable);
-                        ((Button) v).setText("播放");
-                        try {
-                            Field mScroller = ViewPager.class.getDeclaredField("mScroller");
-                            mScroller.setAccessible(true);
-                            Scroller scroller = new Scroller(vp.getContext());
-                            mScroller.set(vp, scroller);
-                        } catch (Exception e) {
-                        }
+                        ((Button) v).setText(R.string.auto_flip);
+                        setFlipDuration();
                         playFlag = false;
                     }
                 }
             });
-            buttonLayout.addView(autoPlay);
 
-            Button lastPage = new Button(this);
-            lastPage.setLayoutParams(new RelativeLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT));
-            lastPage.setText("下一页");
-            lastPage.setTextSize(12);
-            lastPage.setOnClickListener(new View.OnClickListener() {
+            Button nextPage = (Button) buttonLayout.findViewById(R.id.big_photo_next_page);
+            nextPage.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    int cp = vp.getCurrentItem();
-                    cp = (cp + 1) % paths.size();
-                    vp.setCurrentItem(cp);
+                    nextPage();
                 }
             });
-            buttonLayout.addView(lastPage);
-
-            layout.addView(buttonLayout);
 
         } else {
+            vp = (ViewPager) layout.findViewById(R.id.big_photo_viewpager);
+            LinearLayout buttonLayout = (LinearLayout) layout.findViewById(R.id.big_photo_flip_button);
+            layout.removeView(vp);
+            layout.removeView(buttonLayout);
+
             RelativeLayout l = (RelativeLayout) getLayoutInflater().inflate(R.layout.big_photo_item, null);
             setPhoto(l, path, 0, 0);
             layout.addView(l);
