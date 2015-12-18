@@ -80,19 +80,10 @@
             android:id="@+id/big_photo_anticlockwise"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"
-            android:text="@string/anticlockwise"
-            android:textSize="12sp" />
-
-        <Button
-            android:id="@+id/big_photo_clockwise"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentRight="true"
-            android:text="@string/clockwise"
-            android:textSize="12sp" />
+            android:layout_centerInParent="true"
+            android:text=" "
+            android:textSize="12sp"
+            android:visibility="invisible" />
 
     </RelativeLayout>
 
