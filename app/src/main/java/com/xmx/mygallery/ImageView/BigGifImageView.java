@@ -21,6 +21,7 @@ public class BigGifImageView extends GifImageView {
     PointF prev = new PointF();
     PointF mid = new PointF();
     float oldDist = 1f;
+    float rotation;
     float oldRotation = 0;//第二个手指放下时的两点的旋转角度
     Matrix sourceMatrix = new Matrix();
     Matrix matrix = new Matrix();
@@ -36,6 +37,7 @@ public class BigGifImageView extends GifImageView {
     int heightScreen;
 
     float scale = 1f;
+    boolean freeFlag = true;
 
     public BigGifImageView(Context context) {
         this(context, null);
@@ -233,15 +235,18 @@ public class BigGifImageView extends GifImageView {
                         if (newDist > 32f) {
                             PointF newMid = new PointF();
                             midPoint(newMid, event);
+
                             tempMatrix.set(savedMatrix);
-                            float newRotation = rotation(event);
-                            float rotation = newRotation - oldRotation;
-                            float scale = newDist / oldDist;
+
                             tempMatrix.postTranslate(newMid.x - mid.x, newMid.y - mid.y);// 平移
-                            tempMatrix.postScale(scale, scale, newMid.x, newMid.y);// 縮放
+
+                            float newRotation = rotation(event);
+                            rotation = newRotation - oldRotation;
                             tempMatrix.postRotate(rotation, newMid.x, newMid.y);// 旋轉
+
+                            float scale = newDist / oldDist;
+                            tempMatrix.postScale(scale, scale, newMid.x, newMid.y);// 縮放
                             matrix.set(tempMatrix);
-                            setImageMatrix(matrix);
                         }
                     } else if (mode == DRAG) {
                         float tx = event.getX() - prev.x;
@@ -250,17 +255,34 @@ public class BigGifImageView extends GifImageView {
                             tempMatrix.set(savedMatrix);
                             tempMatrix.postTranslate(tx, ty);// 平移
                             matrix.set(tempMatrix);
-                            setImageMatrix(matrix);
                         }
                     }
-                    break;
-                case MotionEvent.ACTION_UP:
                     break;
 
                 case MotionEvent.ACTION_POINTER_UP:
                     mode = NONE;
                     break;
+
+                case MotionEvent.ACTION_UP:
+                    mode = NONE;
+                    if (!freeFlag) {
+                        center(true, true);
+                        rotation = (rotation + 360) % 360;
+                        float[] angle = {0, 90, 180, 270, 360};
+                        float f = 0;
+                        for (float a : angle) {
+                            if (a - 45 < rotation && rotation <= a + 45) {
+                                f = a;
+                            }
+                        }
+                        float r = f - rotation;
+                        rotation = f;
+                        matrix.postRotate(r);
+                        center(true, true);
+                    }
+                    break;
             }
+            setImageMatrix(matrix);
             return true;
         }
     }
@@ -342,5 +364,13 @@ public class BigGifImageView extends GifImageView {
 
     public void lastFrame() {
         mOffset += mFrameTime;
+    }
+
+    public boolean limited() {
+        freeFlag = !freeFlag;
+        matrix.set(sourceMatrix);
+        center(true, true);
+        setImageMatrix(matrix);
+        return freeFlag;
     }
 }

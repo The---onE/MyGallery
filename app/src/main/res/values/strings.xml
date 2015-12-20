@@ -15,4 +15,6 @@
     <string name="auto_flip">播放</string>
     <string name="stop_auto_flip">停止</string>
     <string name="next_page">下页</string>
+    <string name="unlimited">自由</string>
+    <string name="limited">居中</string>
 </resources>

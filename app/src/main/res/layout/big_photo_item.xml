@@ -77,13 +77,13 @@
         android:layout_alignParentBottom="true">
 
         <Button
-            android:id="@+id/big_photo_anticlockwise"
+            android:id="@+id/big_photo_limit"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:text=" "
-            android:textSize="12sp"
-            android:visibility="invisible" />
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:text="@string/unlimited"
+            android:textSize="12sp" />
 
     </RelativeLayout>
 
