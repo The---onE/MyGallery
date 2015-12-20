@@ -37,7 +37,8 @@ public class BigGifImageView extends GifImageView {
     int heightScreen;
 
     float scale = 1f;
-    boolean freeFlag = true;
+    boolean unlimitedFlag = true;
+    boolean translatedFlag = false;
 
     public BigGifImageView(Context context) {
         this(context, null);
@@ -192,9 +193,30 @@ public class BigGifImageView extends GifImageView {
 
             @Override
             public boolean onDoubleTap(MotionEvent e) {
-                matrix.set(sourceMatrix);
-                center(true, true);
-                setImageMatrix(matrix);
+                if (unlimitedFlag) {
+                    matrix.set(sourceMatrix);
+                    center(true, true);
+                    setImageMatrix(matrix);
+                } else {
+                    if (translatedFlag) {
+                        matrix.set(sourceMatrix);
+                        center(true, true);
+                        setImageMatrix(matrix);
+                        translatedFlag = false;
+                    } else {
+                        matrix.set(sourceMatrix);
+                        RectF rect = getMatrixRectF();
+                        float height = rect.height();
+                        float width = rect.width();
+                        float sw = widthScreen / width;
+                        float sh = heightScreen / height;
+                        float scale = sw > sh ? sw : sh;
+                        matrix.postScale(scale, scale, width / 2, height / 2);
+                        center(true, true);
+                        setImageMatrix(matrix);
+                        translatedFlag = true;
+                    }
+                }
                 return false;
             }
         });
@@ -247,6 +269,7 @@ public class BigGifImageView extends GifImageView {
                             float scale = newDist / oldDist;
                             tempMatrix.postScale(scale, scale, newMid.x, newMid.y);// 縮放
                             matrix.set(tempMatrix);
+                            translatedFlag = true;
                         }
                     } else if (mode == DRAG) {
                         float tx = event.getX() - prev.x;
@@ -265,7 +288,7 @@ public class BigGifImageView extends GifImageView {
 
                 case MotionEvent.ACTION_UP:
                     mode = NONE;
-                    if (!freeFlag) {
+                    if (!unlimitedFlag) {
                         center(true, true);
                         rotation = (rotation + 360) % 360;
                         float[] angle = {0, 90, 180, 270, 360};
@@ -367,10 +390,10 @@ public class BigGifImageView extends GifImageView {
     }
 
     public boolean limited() {
-        freeFlag = !freeFlag;
+        unlimitedFlag = !unlimitedFlag;
         matrix.set(sourceMatrix);
         center(true, true);
         setImageMatrix(matrix);
-        return freeFlag;
+        return unlimitedFlag;
     }
 }
