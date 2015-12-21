@@ -37,7 +37,7 @@ public class BigGifImageView extends GifImageView {
     int heightScreen;
 
     float scale = 1f;
-    boolean unlimitedFlag = true;
+    boolean unlimitedFlag = false;
     boolean translatedFlag = false;
 
     public BigGifImageView(Context context) {
@@ -211,7 +211,7 @@ public class BigGifImageView extends GifImageView {
                         float sw = widthScreen / width;
                         float sh = heightScreen / height;
                         float scale = sw > sh ? sw : sh;
-                        matrix.postScale(scale, scale, width / 2, height / 2);
+                        matrix.postScale(scale, scale, e.getX(), e.getY());
                         center(true, true);
                         setImageMatrix(matrix);
                         translatedFlag = true;
