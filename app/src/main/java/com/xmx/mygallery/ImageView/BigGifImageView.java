@@ -156,7 +156,7 @@ public class BigGifImageView extends GifImageView {
 
     public class BigPhotoTouchListener implements View.OnTouchListener {
         private final GestureDetector gestureDetector =
-                new GestureDetector(getContext(), new GestureListener());
+                new GestureDetector(getContext(), new GestureDetector.SimpleOnGestureListener());
 
         BigPhotoTouchListener() {
             gestureDetector.setOnDoubleTapListener(new GestureDetector.OnDoubleTapListener() {
@@ -202,43 +202,6 @@ public class BigGifImageView extends GifImageView {
         }
 
         public boolean onTouch(final View v, final MotionEvent event) {
-            return onTouch(event);
-        }
-
-        private final class GestureListener extends GestureDetector.SimpleOnGestureListener {
-            private static final int SWIPE_THRESHOLD = 100;
-            private static final int SWIPE_VELOCITY_THRESHOLD = 100;
-
-            @Override
-            public boolean onDown(MotionEvent e) {
-                return false;
-            }
-
-            @Override
-            public boolean onSingleTapConfirmed(MotionEvent e) {
-                return false;
-            }
-
-            @Override
-            public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-                boolean result = false;
-                try {
-                    float diffY = e2.getY() - e1.getY();
-                    float diffX = e2.getX() - e1.getX();
-                    if (Math.abs(diffX) > Math.abs(diffY)) {
-                        if (Math.abs(diffX) > SWIPE_THRESHOLD &&
-                                Math.abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
-                            result = true;
-                        }
-                    }
-                } catch (Exception exception) {
-                    exception.printStackTrace();
-                }
-                return result;
-            }
-        }
-
-        private boolean onTouch(MotionEvent event) {
             if (gestureDetector.onTouchEvent(event)) {
                 return true;
             } else {
