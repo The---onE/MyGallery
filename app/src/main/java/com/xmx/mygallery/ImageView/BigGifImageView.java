@@ -27,7 +27,6 @@ public class BigGifImageView extends GifImageView {
     Matrix matrix = new Matrix();
     Matrix tempMatrix = new Matrix();
     Matrix savedMatrix = new Matrix();
-    GestureDetector gestureDetector;
 
     static final int NONE = 0;
     static final int DRAG = 1;
@@ -155,6 +154,169 @@ public class BigGifImageView extends GifImageView {
         });
     }
 
+    public class BigPhotoTouchListener implements View.OnTouchListener {
+        private final GestureDetector gestureDetector =
+                new GestureDetector(getContext(), new GestureListener());
+
+        BigPhotoTouchListener() {
+            gestureDetector.setOnDoubleTapListener(new GestureDetector.OnDoubleTapListener() {
+                @Override
+                public boolean onDoubleTapEvent(MotionEvent e) {
+                    return false;
+                }
+
+                @Override
+                public boolean onSingleTapConfirmed(MotionEvent e) {
+                    return false;
+                }
+
+                @Override
+                public boolean onDoubleTap(MotionEvent e) {
+                    if (unlimitedFlag) {
+                        matrix.set(sourceMatrix);
+                        center(true, true);
+                        setImageMatrix(matrix);
+                    } else {
+                        if (translatedFlag) {
+                            matrix.set(sourceMatrix);
+                            center(true, true);
+                            setImageMatrix(matrix);
+                            translatedFlag = false;
+                        } else {
+                            matrix.set(sourceMatrix);
+                            RectF rect = getMatrixRectF();
+                            float height = rect.height();
+                            float width = rect.width();
+                            float sw = widthScreen / width;
+                            float sh = heightScreen / height;
+                            float scale = sw > sh ? sw : sh;
+                            matrix.postScale(scale, scale, e.getX(), e.getY());
+                            center(true, true);
+                            setImageMatrix(matrix);
+                            translatedFlag = true;
+                        }
+                    }
+                    return false;
+                }
+            });
+        }
+
+        public boolean onTouch(final View v, final MotionEvent event) {
+            return onTouch(event);
+        }
+
+        private final class GestureListener extends GestureDetector.SimpleOnGestureListener {
+            private static final int SWIPE_THRESHOLD = 100;
+            private static final int SWIPE_VELOCITY_THRESHOLD = 100;
+
+            @Override
+            public boolean onDown(MotionEvent e) {
+                return false;
+            }
+
+            @Override
+            public boolean onSingleTapConfirmed(MotionEvent e) {
+                return false;
+            }
+
+            @Override
+            public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+                boolean result = false;
+                try {
+                    float diffY = e2.getY() - e1.getY();
+                    float diffX = e2.getX() - e1.getX();
+                    if (Math.abs(diffX) > Math.abs(diffY)) {
+                        if (Math.abs(diffX) > SWIPE_THRESHOLD &&
+                                Math.abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
+                            result = true;
+                        }
+                    }
+                } catch (Exception exception) {
+                    exception.printStackTrace();
+                }
+                return result;
+            }
+        }
+
+        private boolean onTouch(MotionEvent event) {
+            if (gestureDetector.onTouchEvent(event)) {
+                return true;
+            } else {
+                switch (event.getAction() & MotionEvent.ACTION_MASK) {
+                    case MotionEvent.ACTION_DOWN:
+                        mode = DRAG;
+                        prev.set(event.getX(), event.getY());
+                        savedMatrix.set(matrix);
+                        break;
+
+                    case MotionEvent.ACTION_POINTER_DOWN:
+                        mode = ZOOM;
+                        oldDist = spacing(event);
+                        oldRotation = rotation(event);
+                        savedMatrix.set(matrix);
+                        midPoint(mid, event);
+                        break;
+
+                    case MotionEvent.ACTION_MOVE:
+                        if (mode == ZOOM) {
+                            float newDist = spacing(event);
+                            if (newDist > 32f) {
+                                PointF newMid = new PointF();
+                                midPoint(newMid, event);
+
+                                tempMatrix.set(savedMatrix);
+
+                                tempMatrix.postTranslate(newMid.x - mid.x, newMid.y - mid.y);// 平移
+
+                                float newRotation = rotation(event);
+                                rotation = newRotation - oldRotation;
+                                tempMatrix.postRotate(rotation, newMid.x, newMid.y);// 旋轉
+
+                                float scale = newDist / oldDist;
+                                tempMatrix.postScale(scale, scale, newMid.x, newMid.y);// 縮放
+                                matrix.set(tempMatrix);
+                                translatedFlag = true;
+                            }
+                        } else if (mode == DRAG) {
+                            float tx = event.getX() - prev.x;
+                            float ty = event.getY() - prev.y;
+                            if (Math.sqrt(tx * tx + ty * ty) > 32f) {
+                                tempMatrix.set(savedMatrix);
+                                tempMatrix.postTranslate(tx, ty);// 平移
+                                matrix.set(tempMatrix);
+                            }
+                        }
+                        break;
+
+                    case MotionEvent.ACTION_POINTER_UP:
+                        mode = NONE;
+                        break;
+
+                    case MotionEvent.ACTION_UP:
+                        mode = NONE;
+                        if (!unlimitedFlag) {
+                            center(true, true);
+                            rotation = (rotation + 360) % 360;
+                            float[] angle = {0, 90, 180, 270, 360};
+                            float f = 0;
+                            for (float a : angle) {
+                                if (a - 45 < rotation && rotation <= a + 45) {
+                                    f = a;
+                                }
+                            }
+                            float r = f - rotation;
+                            rotation = f;
+                            matrix.postRotate(r);
+                            center(true, true);
+                        }
+                        break;
+                }
+                setImageMatrix(matrix);
+                return true;
+            }
+        }
+    }
+
     @Override
     protected void setupBitmap() {
         setScaleType(ScaleType.MATRIX);
@@ -167,147 +329,7 @@ public class BigGifImageView extends GifImageView {
         center(true, true);
         setImageMatrix(matrix);
 
-        gestureDetector = new GestureDetector(
-                getContext(),
-                new GestureDetector.SimpleOnGestureListener() {
-                    @Override
-                    public boolean onDown(MotionEvent e) {
-                        return false;
-                    }
-
-                    @Override
-                    public void onLongPress(MotionEvent e) {
-                        super.onLongPress(e);
-                    }
-                });
-        gestureDetector.setOnDoubleTapListener(new GestureDetector.OnDoubleTapListener() {
-            @Override
-            public boolean onDoubleTapEvent(MotionEvent e) {
-                return false;
-            }
-
-            @Override
-            public boolean onSingleTapConfirmed(MotionEvent e) {
-                return false;
-            }
-
-            @Override
-            public boolean onDoubleTap(MotionEvent e) {
-                if (unlimitedFlag) {
-                    matrix.set(sourceMatrix);
-                    center(true, true);
-                    setImageMatrix(matrix);
-                } else {
-                    if (translatedFlag) {
-                        matrix.set(sourceMatrix);
-                        center(true, true);
-                        setImageMatrix(matrix);
-                        translatedFlag = false;
-                    } else {
-                        matrix.set(sourceMatrix);
-                        RectF rect = getMatrixRectF();
-                        float height = rect.height();
-                        float width = rect.width();
-                        float sw = widthScreen / width;
-                        float sh = heightScreen / height;
-                        float scale = sw > sh ? sw : sh;
-                        matrix.postScale(scale, scale, e.getX(), e.getY());
-                        center(true, true);
-                        setImageMatrix(matrix);
-                        translatedFlag = true;
-                    }
-                }
-                return false;
-            }
-        });
-
-        setOnTouchListener(new OnTouchListener() {
-            @SuppressLint("ClickableViewAccessibility")
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                onTouchEvent(event);
-                return true;
-            }
-        });
-    }
-
-
-    public boolean onTouchEvent(MotionEvent event) {
-        if (gestureDetector.onTouchEvent(event)) {
-            return true;
-        } else {
-            switch (event.getAction() & MotionEvent.ACTION_MASK) {
-                case MotionEvent.ACTION_DOWN:
-                    mode = DRAG;
-                    prev.set(event.getX(), event.getY());
-                    savedMatrix.set(matrix);
-                    break;
-
-                case MotionEvent.ACTION_POINTER_DOWN:
-                    mode = ZOOM;
-                    oldDist = spacing(event);
-                    oldRotation = rotation(event);
-                    savedMatrix.set(matrix);
-                    midPoint(mid, event);
-                    break;
-
-                case MotionEvent.ACTION_MOVE:
-                    if (mode == ZOOM) {
-                        float newDist = spacing(event);
-                        if (newDist > 32f) {
-                            PointF newMid = new PointF();
-                            midPoint(newMid, event);
-
-                            tempMatrix.set(savedMatrix);
-
-                            tempMatrix.postTranslate(newMid.x - mid.x, newMid.y - mid.y);// 平移
-
-                            float newRotation = rotation(event);
-                            rotation = newRotation - oldRotation;
-                            tempMatrix.postRotate(rotation, newMid.x, newMid.y);// 旋轉
-
-                            float scale = newDist / oldDist;
-                            tempMatrix.postScale(scale, scale, newMid.x, newMid.y);// 縮放
-                            matrix.set(tempMatrix);
-                            translatedFlag = true;
-                        }
-                    } else if (mode == DRAG) {
-                        float tx = event.getX() - prev.x;
-                        float ty = event.getY() - prev.y;
-                        if (Math.sqrt(tx * tx + ty * ty) > 32f) {
-                            tempMatrix.set(savedMatrix);
-                            tempMatrix.postTranslate(tx, ty);// 平移
-                            matrix.set(tempMatrix);
-                        }
-                    }
-                    break;
-
-                case MotionEvent.ACTION_POINTER_UP:
-                    mode = NONE;
-                    break;
-
-                case MotionEvent.ACTION_UP:
-                    mode = NONE;
-                    if (!unlimitedFlag) {
-                        center(true, true);
-                        rotation = (rotation + 360) % 360;
-                        float[] angle = {0, 90, 180, 270, 360};
-                        float f = 0;
-                        for (float a : angle) {
-                            if (a - 45 < rotation && rotation <= a + 45) {
-                                f = a;
-                            }
-                        }
-                        float r = f - rotation;
-                        rotation = f;
-                        matrix.postRotate(r);
-                        center(true, true);
-                    }
-                    break;
-            }
-            setImageMatrix(matrix);
-            return true;
-        }
+        setOnTouchListener(new BigPhotoTouchListener());
     }
 
     private RectF getMatrixRectF() {
