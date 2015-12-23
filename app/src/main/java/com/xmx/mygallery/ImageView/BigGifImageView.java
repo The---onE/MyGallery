@@ -288,10 +288,8 @@ public class BigGifImageView extends GifImageView {
                         }
                         break;
 
+                    case MotionEvent.ACTION_CANCEL:
                     case MotionEvent.ACTION_POINTER_UP:
-                        mode = NONE;
-                        break;
-
                     case MotionEvent.ACTION_UP:
                         mode = NONE;
                         if (!unlimitedFlag) {
