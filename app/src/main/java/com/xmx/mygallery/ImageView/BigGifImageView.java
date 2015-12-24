@@ -1,6 +1,5 @@
 package com.xmx.mygallery.ImageView;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
@@ -38,6 +37,13 @@ public class BigGifImageView extends GifImageView {
     float scale = 1f;
     boolean unlimitedFlag = false;
     boolean translatedFlag = false;
+
+    long startTime;
+
+    static final int DRAG_SENSITIVITY = 32;
+    static final int ZOOM_SENSITIVITY = 32;
+    static final float SWIPE_SPEED = 0.5f;
+    static final int SWIPE_SENSITIVITY = 300;
 
     public BigGifImageView(Context context) {
         this(context, null);
@@ -206,8 +212,6 @@ public class BigGifImageView extends GifImageView {
         }
 
         private final class GestureListener extends GestureDetector.SimpleOnGestureListener {
-            private static final int SWIPE_THRESHOLD = 100;
-            private static final int SWIPE_VELOCITY_THRESHOLD = 100;
 
             @Override
             public boolean onDown(MotionEvent e) {
@@ -217,24 +221,6 @@ public class BigGifImageView extends GifImageView {
             @Override
             public boolean onSingleTapConfirmed(MotionEvent e) {
                 return false;
-            }
-
-            @Override
-            public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-                boolean result = false;
-                try {
-                    float diffY = e2.getY() - e1.getY();
-                    float diffX = e2.getX() - e1.getX();
-                    if (Math.abs(diffX) > Math.abs(diffY)) {
-                        if (Math.abs(diffX) > SWIPE_THRESHOLD &&
-                                Math.abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
-                            result = true;
-                        }
-                    }
-                } catch (Exception exception) {
-                    exception.printStackTrace();
-                }
-                return result;
             }
         }
 
@@ -247,6 +233,7 @@ public class BigGifImageView extends GifImageView {
                         mode = DRAG;
                         prev.set(event.getX(), event.getY());
                         savedMatrix.set(matrix);
+                        startTime = android.os.SystemClock.uptimeMillis();
                         break;
 
                     case MotionEvent.ACTION_POINTER_DOWN:
@@ -260,7 +247,7 @@ public class BigGifImageView extends GifImageView {
                     case MotionEvent.ACTION_MOVE:
                         if (mode == ZOOM) {
                             float newDist = spacing(event);
-                            if (newDist > 32f) {
+                            if (newDist > ZOOM_SENSITIVITY) {
                                 PointF newMid = new PointF();
                                 midPoint(newMid, event);
 
@@ -280,7 +267,14 @@ public class BigGifImageView extends GifImageView {
                         } else if (mode == DRAG) {
                             float tx = event.getX() - prev.x;
                             float ty = event.getY() - prev.y;
-                            if (Math.sqrt(tx * tx + ty * ty) > 32f) {
+                            long time = android.os.SystemClock.uptimeMillis();
+                            float speed = tx / (time - startTime);
+                            if (Math.abs(tx) < SWIPE_SENSITIVITY) {
+                                getParent().requestDisallowInterceptTouchEvent(true);
+                            } else if (Math.abs(speed) > SWIPE_SPEED){
+                                getParent().requestDisallowInterceptTouchEvent(false);
+                            }
+                            if (Math.sqrt(tx * tx + ty * ty) > DRAG_SENSITIVITY) {
                                 tempMatrix.set(savedMatrix);
                                 tempMatrix.postTranslate(tx, ty);// 平移
                                 matrix.set(tempMatrix);
