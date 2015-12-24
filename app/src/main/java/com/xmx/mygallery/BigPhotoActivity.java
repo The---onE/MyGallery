@@ -56,7 +56,7 @@ public class BigPhotoActivity extends Activity {
         boolean flag = iv.setImageByPathLoader(path);
 
         LinearLayout gifButtons = (LinearLayout) l.findViewById(R.id.big_photo_gif_button);
-        RelativeLayout photoButtons = (RelativeLayout) l.findViewById(R.id.big_photo_photo_button);
+        LinearLayout photoButtons = (LinearLayout) l.findViewById(R.id.big_photo_photo_button);
         Button limit = (Button) photoButtons.findViewById(R.id.big_photo_limit);
         limit.setOnClickListener(new View.OnClickListener() {
             @Override

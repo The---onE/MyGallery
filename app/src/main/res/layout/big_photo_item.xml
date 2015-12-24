@@ -35,56 +35,68 @@
 
         <Button
             android:id="@+id/big_photo_last"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:text="@string/last"
             android:textSize="12sp" />
 
         <Button
             android:id="@+id/big_photo_upend"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:text="@string/upend"
             android:textSize="12sp" />
 
         <Button
             android:id="@+id/big_photo_pause"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:text="@string/pause"
             android:textSize="12sp" />
 
         <Button
             android:id="@+id/big_photo_play"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:text="@string/play"
             android:textSize="12sp" />
 
         <Button
             android:id="@+id/big_photo_next"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:text="@string/next"
             android:textSize="12sp" />
 
     </LinearLayout>
 
-    <RelativeLayout
+    <LinearLayout
         android:id="@+id/big_photo_photo_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true">
 
         <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="4"
+            android:visibility="invisible" />
+
+        <Button
             android:id="@+id/big_photo_limit"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
             android:layout_alignParentRight="true"
+            android:layout_weight="1"
             android:text="@string/limited"
             android:textSize="12sp" />
 
-    </RelativeLayout>
+    </LinearLayout>
 
 </RelativeLayout>

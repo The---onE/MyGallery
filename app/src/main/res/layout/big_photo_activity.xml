@@ -21,25 +21,40 @@
         android:orientation="horizontal">
 
         <Button
-            android:id="@+id/big_photo_last_page"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:visibility="invisible" />
+
+        <Button
+            android:id="@+id/big_photo_last_page"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:text="@string/last_page"
             android:textSize="12sp" />
 
         <Button
             android:id="@+id/big_photo_auto_flip"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:text="@string/auto_flip"
             android:textSize="12sp" />
 
         <Button
             android:id="@+id/big_photo_next_page"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:text="@string/next_page"
             android:textSize="12sp" />
+
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:visibility="invisible" />
 
 
     </LinearLayout>

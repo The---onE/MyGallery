@@ -40,10 +40,10 @@ public class BigGifImageView extends GifImageView {
 
     long startTime;
 
-    static final int DRAG_SENSITIVITY = 32;
-    static final int ZOOM_SENSITIVITY = 32;
-    static final float SWIPE_SPEED = 0.5f;
-    static final int SWIPE_SENSITIVITY = 300;
+    float DRAG_SENSITIVITY;
+    float ZOOM_SENSITIVITY;
+    float SWIPE_SPEED;
+    float SWIPE_SENSITIVITY;
 
     public BigGifImageView(Context context) {
         this(context, null);
@@ -74,8 +74,8 @@ public class BigGifImageView extends GifImageView {
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         if (mGif != null || mMovie != null) {
-            int movieWidth = 1;
-            int movieHeight = 1;
+            int movieWidth;
+            int movieHeight;
             if (mGif != null) {
                 movieWidth = mGif.width();
                 movieHeight = mGif.height();
@@ -121,6 +121,22 @@ public class BigGifImageView extends GifImageView {
                 e.printStackTrace();
             }
         }
+
+        int movieWidth;
+        int movieHeight;
+        if (mGif != null) {
+            movieWidth = mGif.width();
+            movieHeight = mGif.height();
+        } else {
+            movieWidth = mMovie.width();
+            movieHeight = mMovie.height();
+        }
+        DisplayMetrics dm = getContext().getResources().getDisplayMetrics();
+        int width = dm.widthPixels;
+        int height = dm.heightPixels;
+        float widthScale = (float) width / (float) movieWidth;
+        float heightScale = (float) height / (float) movieHeight;
+        customScale = Math.min(customScale, Math.min(widthScale, heightScale));
 
         this.setOnTouchListener(new OnTouchListener() {
             @Override
@@ -230,6 +246,14 @@ public class BigGifImageView extends GifImageView {
             } else {
                 switch (event.getAction() & MotionEvent.ACTION_MASK) {
                     case MotionEvent.ACTION_DOWN:
+                        DisplayMetrics dm = getContext().getResources().getDisplayMetrics();
+                        widthScreen = dm.widthPixels;
+                        float param = widthScreen / 1000f;
+                        DRAG_SENSITIVITY = 32 * param;
+                        ZOOM_SENSITIVITY = 32 * param;
+                        SWIPE_SPEED = 0.6f * param;
+                        SWIPE_SENSITIVITY = 250 * param;
+
                         mode = DRAG;
                         prev.set(event.getX(), event.getY());
                         savedMatrix.set(matrix);
@@ -271,7 +295,7 @@ public class BigGifImageView extends GifImageView {
                             float speed = tx / (time - startTime);
                             if (Math.abs(tx) < SWIPE_SENSITIVITY) {
                                 getParent().requestDisallowInterceptTouchEvent(true);
-                            } else if (Math.abs(speed) > SWIPE_SPEED){
+                            } else if (Math.abs(speed) > SWIPE_SPEED) {
                                 getParent().requestDisallowInterceptTouchEvent(false);
                             }
                             if (Math.sqrt(tx * tx + ty * ty) > DRAG_SENSITIVITY) {
