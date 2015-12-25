@@ -21,11 +21,16 @@ public class BigGifImageView extends GifImageView {
     PointF mid = new PointF();
     float oldDist = 1f;
     float rotation;
-    float oldRotation = 0;//第二个手指放下时的两点的旋转角度
+    float oldRotation = 0;
+    float oldScale = 1f;
     Matrix sourceMatrix = new Matrix();
+    float sourceScale;
     Matrix matrix = new Matrix();
     Matrix tempMatrix = new Matrix();
     Matrix savedMatrix = new Matrix();
+
+    float startOffsetX;
+    float startOffsetY;
 
     static final int NONE = 0;
     static final int DRAG = 1;
@@ -34,7 +39,6 @@ public class BigGifImageView extends GifImageView {
     int widthScreen;
     int heightScreen;
 
-    float scale = 1f;
     boolean unlimitedFlag = false;
     boolean translatedFlag = false;
 
@@ -103,6 +107,178 @@ public class BigGifImageView extends GifImageView {
         }
     }
 
+    public class MovieTouchListener implements View.OnTouchListener {
+        private final GestureDetector gestureDetector =
+                new GestureDetector(getContext(), new GestureListener());
+
+        MovieTouchListener() {
+            gestureDetector.setOnDoubleTapListener(new GestureDetector.OnDoubleTapListener() {
+                @Override
+                public boolean onDoubleTapEvent(MotionEvent e) {
+                    return false;
+                }
+
+                @Override
+                public boolean onSingleTapConfirmed(MotionEvent e) {
+                    return false;
+                }
+
+                @Override
+                public boolean onDoubleTap(MotionEvent e) {
+                    if (unlimitedFlag) {
+                        customScale = sourceScale;
+                        mOffsetX = 0;
+                        mOffsetY = 0;
+                        requestLayout();
+                        postInvalidate();
+                    } else {
+                        if (translatedFlag) {
+                            customScale = sourceScale;
+                            mOffsetX = 0;
+                            mOffsetY = 0;
+                            requestLayout();
+                            postInvalidate();
+                            translatedFlag = false;
+                        } else {
+                            DisplayMetrics dm = getContext().getResources().getDisplayMetrics();
+                            widthScreen = dm.widthPixels;
+                            heightScreen = dm.heightPixels;
+
+                            int movieWidth;
+                            int movieHeight;
+                            if (mGif != null) {
+                                movieWidth = mGif.width();
+                                movieHeight = mGif.height();
+                            } else {
+                                movieWidth = mMovie.width();
+                                movieHeight = mMovie.height();
+                            }
+                            float s1 = (float) widthScreen / (float) movieWidth;
+                            float s2 = (float) heightScreen / (float) movieHeight;
+                            customScale = (s1 < s2) ? s1 : s2;
+                            mOffsetX = 0;
+                            mOffsetY = 0;
+                            requestLayout();
+                            postInvalidate();
+                            translatedFlag = true;
+                        }
+                    }
+                    return false;
+                }
+            });
+        }
+
+        public boolean onTouch(final View v, final MotionEvent event) {
+            return onTouch(event);
+        }
+
+        private final class GestureListener extends GestureDetector.SimpleOnGestureListener {
+
+            @Override
+            public boolean onDown(MotionEvent e) {
+                return false;
+            }
+
+            @Override
+            public boolean onSingleTapConfirmed(MotionEvent e) {
+                return false;
+            }
+        }
+
+        private boolean onTouch(MotionEvent event) {
+            if (gestureDetector.onTouchEvent(event)) {
+                return true;
+            } else {
+                switch (event.getAction() & MotionEvent.ACTION_MASK) {
+                    // 主点按下
+                    case MotionEvent.ACTION_DOWN:
+                        DisplayMetrics dm = getContext().getResources().getDisplayMetrics();
+                        widthScreen = dm.widthPixels;
+                        float param = widthScreen / 1000f;
+                        DRAG_SENSITIVITY = 32 * param;
+                        ZOOM_SENSITIVITY = 32 * param;
+                        SWIPE_SPEED = 0.5f;
+                        SWIPE_SENSITIVITY = 250 * param;
+
+                        mode = DRAG;
+                        prev.set(event.getX(), event.getY());
+                        startOffsetX = mOffsetX;
+                        startOffsetY = mOffsetY;
+                        startTime = android.os.SystemClock.uptimeMillis();
+                        break;
+
+                    // 副点按下
+                    case MotionEvent.ACTION_POINTER_DOWN:
+                        mode = ZOOM;
+                        oldDist = spacing(event);
+                        oldScale = customScale;
+                        oldRotation = rotation(event);
+                        midPoint(mid, event);
+                        break;
+
+                    case MotionEvent.ACTION_MOVE:
+                        if (mode == ZOOM) {
+                            float newDist = spacing(event);
+                            if (newDist > ZOOM_SENSITIVITY) {
+                                PointF newMid = new PointF();
+                                midPoint(newMid, event);
+                                customScale = oldScale * newDist / oldDist;
+
+                                mOffsetX = startOffsetX + newMid.x - mid.x;
+                                mOffsetY = startOffsetY + newMid.y - mid.y;
+
+                                float newRotation = rotation(event);
+                                rotation = newRotation - oldRotation;
+
+                                requestLayout();
+                                postInvalidate();
+                                translatedFlag = true;
+                            }
+                        } else if (mode == DRAG) {
+                            float tx = event.getX() - prev.x;
+                            float ty = event.getY() - prev.y;
+                            long time = android.os.SystemClock.uptimeMillis();
+                            float speed = tx / (time - startTime);
+
+                            if (Math.sqrt(tx * tx + ty * ty) > DRAG_SENSITIVITY) {
+                                mOffsetX = startOffsetX + tx;
+                                mOffsetY = startOffsetY + ty;
+                            }
+
+                            if (Math.abs(tx) < SWIPE_SENSITIVITY) {
+                                getParent().requestDisallowInterceptTouchEvent(true);
+                            } else if (Math.abs(speed) > SWIPE_SPEED) {
+                                getParent().requestDisallowInterceptTouchEvent(false);
+                            }
+                        }
+                        break;
+
+                    case MotionEvent.ACTION_CANCEL:
+                    case MotionEvent.ACTION_POINTER_UP:
+                    case MotionEvent.ACTION_UP:
+                        mode = NONE;
+                        if (!unlimitedFlag) {
+                            rotation = (rotation + 360) % 360;
+                            float[] angle = {0, 90, 180, 270, 360};
+                            float f = 0;
+                            for (float a : angle) {
+                                if (a - 45 < rotation && rotation <= a + 45) {
+                                    f = a;
+                                }
+                            }
+                            float r = f - rotation;
+                            rotation = f;
+
+                            mOffsetX = 0;
+                            mOffsetY = 0;
+                        }
+                        break;
+                }
+                return true;
+            }
+        }
+    }
+
     @Override
     protected void setupMovie() {
         requestLayout();
@@ -137,50 +313,16 @@ public class BigGifImageView extends GifImageView {
         float widthScale = (float) width / (float) movieWidth;
         float heightScale = (float) height / (float) movieHeight;
         customScale = Math.min(customScale, Math.min(widthScale, heightScale));
+        sourceScale = customScale;
 
-        this.setOnTouchListener(new OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                switch (event.getAction() & MotionEvent.ACTION_MASK) {
-                    // 主点按下
-                    case MotionEvent.ACTION_DOWN:
-                        prev.set(event.getX(), event.getY());
-                        break;
-                    // 副点按下
-                    case MotionEvent.ACTION_POINTER_DOWN:
-                        oldDist = spacing(event);
-                        scale = customScale;
-                        midPoint(mid, event);
-                        mode = ZOOM;
-                        break;
-                    case MotionEvent.ACTION_UP: {
-                        break;
-                    }
-                    case MotionEvent.ACTION_POINTER_UP:
-                        mode = NONE;
-                        break;
-                    case MotionEvent.ACTION_MOVE:
-                        if (mode == ZOOM) {
-                            float newDist = spacing(event);
-                            if (newDist > 32f) {
-                                float tScale = newDist / oldDist;
-                                customScale = scale * tScale;
-                                requestLayout();
-                                postInvalidate();
-                            }
-                        }
-                        break;
-                }
-                return true;
-            }
-        });
+        this.setOnTouchListener(new MovieTouchListener());
     }
 
-    public class BigPhotoTouchListener implements View.OnTouchListener {
+    public class BitmapTouchListener implements View.OnTouchListener {
         private final GestureDetector gestureDetector =
                 new GestureDetector(getContext(), new GestureListener());
 
-        BigPhotoTouchListener() {
+        BitmapTouchListener() {
             gestureDetector.setOnDoubleTapListener(new GestureDetector.OnDoubleTapListener() {
                 @Override
                 public boolean onDoubleTapEvent(MotionEvent e) {
@@ -251,7 +393,7 @@ public class BigGifImageView extends GifImageView {
                         float param = widthScreen / 1000f;
                         DRAG_SENSITIVITY = 32 * param;
                         ZOOM_SENSITIVITY = 32 * param;
-                        SWIPE_SPEED = 0.6f * param;
+                        SWIPE_SPEED = 0.5f;
                         SWIPE_SENSITIVITY = 250 * param;
 
                         mode = DRAG;
@@ -293,15 +435,17 @@ public class BigGifImageView extends GifImageView {
                             float ty = event.getY() - prev.y;
                             long time = android.os.SystemClock.uptimeMillis();
                             float speed = tx / (time - startTime);
-                            if (Math.abs(tx) < SWIPE_SENSITIVITY) {
-                                getParent().requestDisallowInterceptTouchEvent(true);
-                            } else if (Math.abs(speed) > SWIPE_SPEED) {
-                                getParent().requestDisallowInterceptTouchEvent(false);
-                            }
+
                             if (Math.sqrt(tx * tx + ty * ty) > DRAG_SENSITIVITY) {
                                 tempMatrix.set(savedMatrix);
                                 tempMatrix.postTranslate(tx, ty);// 平移
                                 matrix.set(tempMatrix);
+                            }
+
+                            if (Math.abs(tx) < SWIPE_SENSITIVITY) {
+                                getParent().requestDisallowInterceptTouchEvent(true);
+                            } else if (Math.abs(speed) > SWIPE_SPEED) {
+                                getParent().requestDisallowInterceptTouchEvent(false);
                             }
                         }
                         break;
@@ -311,7 +455,6 @@ public class BigGifImageView extends GifImageView {
                     case MotionEvent.ACTION_UP:
                         mode = NONE;
                         if (!unlimitedFlag) {
-                            center(true, true);
                             rotation = (rotation + 360) % 360;
                             float[] angle = {0, 90, 180, 270, 360};
                             float f = 0;
@@ -345,7 +488,7 @@ public class BigGifImageView extends GifImageView {
         center(true, true);
         setImageMatrix(matrix);
 
-        setOnTouchListener(new BigPhotoTouchListener());
+        setOnTouchListener(new BitmapTouchListener());
     }
 
     private RectF getMatrixRectF() {
@@ -432,6 +575,8 @@ public class BigGifImageView extends GifImageView {
         matrix.set(sourceMatrix);
         center(true, true);
         setImageMatrix(matrix);
+        mOffsetX = 0;
+        mOffsetY = 0;
         return unlimitedFlag;
     }
 }

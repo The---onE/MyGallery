@@ -111,8 +111,6 @@ public class BigPhotoActivity extends Activity {
                     iv.nextFrame();
                 }
             });
-
-            limit.setVisibility(View.INVISIBLE);
         }
         return l;
     }

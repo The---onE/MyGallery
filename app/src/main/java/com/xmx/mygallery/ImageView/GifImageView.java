@@ -39,6 +39,8 @@ public class GifImageView extends ImageView {
     protected float mLeft;
     protected float mTop;
     protected float mScale;
+    protected float mOffsetX = 0;
+    protected float mOffsetY = 0;
 
     static final int PLAY = 0;
     static final int PAUSE = 1;
@@ -381,18 +383,16 @@ public class GifImageView extends ImageView {
                 }
             }
             Bitmap b = mGif.getNextFrame();
-            //mMovie.setTime(mCurrentAnimationTime);
             canvas.save(Canvas.MATRIX_SAVE_FLAG);
             canvas.scale(mScale, mScale);
-            canvas.drawBitmap(b, mLeft / mScale, mTop / mScale, null);
-            //mMovie.draw(canvas, mLeft / mScale, mTop / mScale);
+            canvas.drawBitmap(b, (mOffsetX + mLeft) / mScale, (mOffsetY + mTop) / mScale, null);
             canvas.restore();
         }
         if (mMovie != null) {
             mMovie.setTime(mCurrentAnimationTime);
             canvas.save(Canvas.MATRIX_SAVE_FLAG);
             canvas.scale(mScale, mScale);
-            mMovie.draw(canvas, mLeft / mScale, mTop / mScale);
+            mMovie.draw(canvas, (mOffsetX + mLeft) / mScale, (mOffsetY + mTop) / mScale);
             canvas.restore();
         }
     }
