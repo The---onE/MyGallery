@@ -194,11 +194,12 @@ public class BigGifImageView extends GifImageView {
                     case MotionEvent.ACTION_DOWN:
                         DisplayMetrics dm = getContext().getResources().getDisplayMetrics();
                         widthScreen = dm.widthPixels;
+                        heightScreen = dm.heightPixels;
                         float param = widthScreen / 1000f;
                         DRAG_SENSITIVITY = 32 * param;
                         ZOOM_SENSITIVITY = 32 * param;
                         SWIPE_SPEED = 0.5f;
-                        SWIPE_SENSITIVITY = 250 * param;
+                        SWIPE_SENSITIVITY = 200 * param;
 
                         mode = DRAG;
                         prev.set(event.getX(), event.getY());
@@ -258,7 +259,7 @@ public class BigGifImageView extends GifImageView {
                     case MotionEvent.ACTION_UP:
                         mode = NONE;
                         if (!unlimitedFlag) {
-                            rotation = (rotation + 360) % 360;
+                            /*rotation = (rotation + 360) % 360;
                             float[] angle = {0, 90, 180, 270, 360};
                             float f = 0;
                             for (float a : angle) {
@@ -267,10 +268,37 @@ public class BigGifImageView extends GifImageView {
                                 }
                             }
                             float r = f - rotation;
-                            rotation = f;
+                            rotation = f;*/
 
-                            mOffsetX = 0;
-                            mOffsetY = 0;
+                            int movieWidth;
+                            int movieHeight;
+                            if (mGif != null) {
+                                movieWidth = mGif.width();
+                                movieHeight = mGif.height();
+                            } else {
+                                movieWidth = mMovie.width();
+                                movieHeight = mMovie.height();
+                            }
+                            float width = movieWidth * customScale;
+                            float height = movieHeight * customScale;
+
+                            float deltaWidth = (width-widthScreen) / 2;
+                            if (width < widthScreen) {
+                                mOffsetX = 0;
+                            } else if (deltaWidth - mOffsetX < 0) {
+                                mOffsetX = deltaWidth;
+                            } else if (deltaWidth + mOffsetX < 0) {
+                                mOffsetX = -deltaWidth;
+                            }
+
+                            float deltaHeight = (height-heightScreen) / 2;
+                            if (height < heightScreen) {
+                                mOffsetY = 0;
+                            } else if (deltaHeight - mOffsetY < 0) {
+                                mOffsetY = deltaHeight;
+                            } else if (deltaWidth + mOffsetX < 0) {
+                                mOffsetY = -deltaHeight;
+                            }
                         }
                         break;
                 }
@@ -394,7 +422,7 @@ public class BigGifImageView extends GifImageView {
                         DRAG_SENSITIVITY = 32 * param;
                         ZOOM_SENSITIVITY = 32 * param;
                         SWIPE_SPEED = 0.5f;
-                        SWIPE_SENSITIVITY = 250 * param;
+                        SWIPE_SENSITIVITY = 200 * param;
 
                         mode = DRAG;
                         prev.set(event.getX(), event.getY());
