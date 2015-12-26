@@ -2,6 +2,7 @@ package com.xmx.mygallery.ImageView;
 
 import android.content.Context;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.PointF;
 import android.graphics.RectF;
@@ -41,6 +42,7 @@ public class BigGifImageView extends GifImageView {
 
     boolean unlimitedFlag = false;
     boolean translatedFlag = false;
+    boolean transparentFlag = true;
 
     long startTime;
 
@@ -120,6 +122,13 @@ public class BigGifImageView extends GifImageView {
 
                 @Override
                 public boolean onSingleTapConfirmed(MotionEvent e) {
+                    if (transparentFlag) {
+                        setBackgroundColor(Color.BLACK);
+                        transparentFlag = false;
+                    } else {
+                        setBackgroundColor(Color.TRANSPARENT);
+                        transparentFlag = true;
+                    }
                     return false;
                 }
 
@@ -282,7 +291,7 @@ public class BigGifImageView extends GifImageView {
                             float width = movieWidth * customScale;
                             float height = movieHeight * customScale;
 
-                            float deltaWidth = (width-widthScreen) / 2;
+                            float deltaWidth = (width - widthScreen) / 2;
                             if (width < widthScreen) {
                                 mOffsetX = 0;
                             } else if (deltaWidth - mOffsetX < 0) {
@@ -291,7 +300,7 @@ public class BigGifImageView extends GifImageView {
                                 mOffsetX = -deltaWidth;
                             }
 
-                            float deltaHeight = (height-heightScreen) / 2;
+                            float deltaHeight = (height - heightScreen) / 2;
                             if (height < heightScreen) {
                                 mOffsetY = 0;
                             } else if (deltaHeight - mOffsetY < 0) {
@@ -359,6 +368,13 @@ public class BigGifImageView extends GifImageView {
 
                 @Override
                 public boolean onSingleTapConfirmed(MotionEvent e) {
+                    if (transparentFlag) {
+                        setBackgroundColor(Color.BLACK);
+                        transparentFlag = false;
+                    } else {
+                        setBackgroundColor(Color.TRANSPARENT);
+                        transparentFlag = true;
+                    }
                     return false;
                 }
 
@@ -406,6 +422,7 @@ public class BigGifImageView extends GifImageView {
 
             @Override
             public boolean onSingleTapConfirmed(MotionEvent e) {
+                setBackgroundColor(Color.TRANSPARENT);
                 return false;
             }
         }
