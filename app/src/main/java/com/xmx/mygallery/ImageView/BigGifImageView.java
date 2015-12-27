@@ -12,6 +12,11 @@ import android.util.DisplayMetrics;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+
+import com.xmx.mygallery.R;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -124,9 +129,11 @@ public class BigGifImageView extends GifImageView {
                 public boolean onSingleTapConfirmed(MotionEvent e) {
                     if (transparentFlag) {
                         setBackgroundColor(Color.BLACK);
+                        hideButton();
                         transparentFlag = false;
                     } else {
                         setBackgroundColor(Color.TRANSPARENT);
+                        showButton();
                         transparentFlag = true;
                     }
                     return false;
@@ -370,9 +377,11 @@ public class BigGifImageView extends GifImageView {
                 public boolean onSingleTapConfirmed(MotionEvent e) {
                     if (transparentFlag) {
                         setBackgroundColor(Color.BLACK);
+                        hideButton();
                         transparentFlag = false;
                     } else {
                         setBackgroundColor(Color.TRANSPARENT);
+                        showButton();
                         transparentFlag = true;
                     }
                     return false;
@@ -422,7 +431,6 @@ public class BigGifImageView extends GifImageView {
 
             @Override
             public boolean onSingleTapConfirmed(MotionEvent e) {
-                setBackgroundColor(Color.TRANSPARENT);
                 return false;
             }
         }
@@ -623,5 +631,45 @@ public class BigGifImageView extends GifImageView {
         mOffsetX = 0;
         mOffsetY = 0;
         return unlimitedFlag;
+    }
+
+    private void hideButton() {
+        RelativeLayout l = (RelativeLayout) getParent();
+        TextView tv = (TextView) l.findViewById(R.id.big_photo_index);
+        if (tv != null) {
+            tv.setVisibility(INVISIBLE);
+        }
+        TextView name = (TextView) l.findViewById(R.id.big_photo_name);
+        if (name != null) {
+            name.setVisibility(INVISIBLE);
+        }
+        LinearLayout gifButtons = (LinearLayout) l.findViewById(R.id.big_photo_gif_button);
+        if (gifButtons != null) {
+            gifButtons.setVisibility(INVISIBLE);
+        }
+        LinearLayout photoButtons = (LinearLayout) l.findViewById(R.id.big_photo_photo_button);
+        if (photoButtons != null) {
+            photoButtons.setVisibility(INVISIBLE);
+        }
+    }
+
+    public void showButton() {
+        RelativeLayout l = (RelativeLayout) getParent();
+        TextView tv = (TextView) l.findViewById(R.id.big_photo_index);
+        if (tv != null) {
+            tv.setVisibility(VISIBLE);
+        }
+        TextView name = (TextView) l.findViewById(R.id.big_photo_name);
+        if (name != null) {
+            name.setVisibility(VISIBLE);
+        }
+        LinearLayout gifButtons = (LinearLayout) l.findViewById(R.id.big_photo_gif_button);
+        if (gifButtons != null) {
+            gifButtons.setVisibility(VISIBLE);
+        }
+        LinearLayout photoButtons = (LinearLayout) l.findViewById(R.id.big_photo_photo_button);
+        if (photoButtons != null) {
+            photoButtons.setVisibility(VISIBLE);
+        }
     }
 }
