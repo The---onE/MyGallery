@@ -406,4 +406,14 @@ public class GifImageView extends ImageView {
         requestLayout();
         postInvalidate();
     }
+
+    public void resume() {
+        if (mGif != null || mMovie != null) {
+            long now = android.os.SystemClock.uptimeMillis();
+            mMovieStart = now;
+            mLatestTime = now;
+            mOffset = 0;
+            mCurrentAnimationTime = 0;
+        }
+    }
 }

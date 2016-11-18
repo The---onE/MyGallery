@@ -26,6 +26,8 @@ import com.xmx.mygallery.Tools.ActivityBase.BaseActivity;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class BigPhotoActivity extends BaseActivity {
     RelativeLayout layout;
@@ -36,13 +38,15 @@ public class BigPhotoActivity extends BaseActivity {
     int index;
     boolean playFlag = false;
 
-    private RelativeLayout setPhoto(RelativeLayout l, String path, int sum, int index) {
+    Map<Integer, BigGifImageView> imageViews = new HashMap<>();
+
+    private RelativeLayout setPhoto(RelativeLayout l, String path, int sum, int position) {
 
         TextView tv = (TextView) l.findViewById(R.id.big_photo_index);
         if (sum <= 0) {
             l.removeView(tv);
         } else {
-            tv.setText("" + index + "/" + sum);
+            tv.setText("" + (position + 1) + "/" + sum);
         }
 
         TextView name = (TextView) l.findViewById(R.id.big_photo_name);
@@ -55,6 +59,9 @@ public class BigPhotoActivity extends BaseActivity {
 
         final BigGifImageView iv = (BigGifImageView) l.findViewById(R.id.big_photo);
         boolean flag = iv.setImageByPathLoader(path);
+        if (!imageViews.containsKey(position)) {
+            imageViews.put(position, iv);
+        }
 
         LinearLayout gifButtons = (LinearLayout) l.findViewById(R.id.big_photo_gif_button);
         LinearLayout photoButtons = (LinearLayout) l.findViewById(R.id.big_photo_photo_button);
@@ -210,12 +217,15 @@ public class BigPhotoActivity extends BaseActivity {
                 @Override
                 public void destroyItem(ViewGroup container, int position, Object object) {
                     container.removeView((View) object);
+                    if (imageViews.containsKey(position)) {
+                        imageViews.remove(position);
+                    }
                 }
 
                 @Override
                 public Object instantiateItem(ViewGroup container, int position) {
                     RelativeLayout l = (RelativeLayout) getLayoutInflater().inflate(R.layout.big_photo_item, null);
-                    setPhoto(l, paths.get(position), paths.size(), position + 1);
+                    setPhoto(l, paths.get(position), paths.size(), position);
 
                     container.addView(l);
                     l.setTag("layout" + position);
@@ -290,7 +300,25 @@ public class BigPhotoActivity extends BaseActivity {
 
     @Override
     protected void setListener() {
+        vp.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
 
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                if (imageViews.containsKey(position)) {
+                    BigGifImageView iv = imageViews.get(position);
+                    iv.resume();
+                }
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
     }
 
     @Override
