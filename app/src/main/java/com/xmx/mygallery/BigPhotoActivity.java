@@ -21,12 +21,13 @@ import android.widget.TextView;
 
 import com.xmx.mygallery.Entities.FixedSpeedScroller;
 import com.xmx.mygallery.ImageView.BigGifImageView;
+import com.xmx.mygallery.Tools.ActivityBase.BaseActivity;
 
 import java.io.File;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 
-public class BigPhotoActivity extends Activity {
+public class BigPhotoActivity extends BaseActivity {
     RelativeLayout layout;
     //JazzyViewPager vp;
     ViewPager vp;
@@ -155,12 +156,11 @@ public class BigPhotoActivity extends Activity {
     }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    protected void initView(Bundle savedInstanceState) {
         setContentView(R.layout.big_photo_activity);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        layout = (RelativeLayout) (findViewById(R.id.photo_layout));
+        layout = getViewById(R.id.photo_layout);
 
         paths = new ArrayList<>();
         index = getIntent().getIntExtra("index", -1);
@@ -286,6 +286,16 @@ public class BigPhotoActivity extends Activity {
             setPhoto(l, path, 0, 0);
             layout.addView(l);
         }
+    }
+
+    @Override
+    protected void setListener() {
+
+    }
+
+    @Override
+    protected void processLogic(Bundle savedInstanceState) {
+
     }
 
     @Override

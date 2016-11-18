@@ -13,6 +13,7 @@ import android.widget.ListView;
 
 import com.xmx.mygallery.Adapter.AlbumAdapter;
 import com.xmx.mygallery.Entities.AlbumItem;
+import com.xmx.mygallery.Tools.FragmentBase.BaseFragment;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -22,7 +23,7 @@ import java.util.Map;
 /**
  * A placeholder fragment containing a simple view.
  */
-public class MainActivityFragment extends Fragment {
+public class MainActivityFragment extends BaseFragment {
     private ListView albumGV;
     private List<AlbumItem> albumList;
 
@@ -37,28 +38,32 @@ public class MainActivityFragment extends Fragment {
     };
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    protected View getContentView(LayoutInflater inflater, ViewGroup container) {
         return inflater.inflate(R.layout.album, container, false);
     }
 
     @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        albumGV = (ListView) getActivity().findViewById(R.id.album_listview);
-        albumList = getPhotoAlbum();
-        albumGV.setAdapter(new AlbumAdapter(albumList, getContext()));
-        albumGV.setOnItemClickListener(albumClickListener);
+    protected void initView(View view) {
+        albumGV = (ListView) view.findViewById(R.id.album_listview);
     }
 
-    AdapterView.OnItemClickListener albumClickListener = new AdapterView.OnItemClickListener() {
-        @Override
-        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            Intent intent = new Intent(getActivity(), PhotoActivity.class);
-            intent.putExtra("album", albumList.get(position));
-            startActivity(intent);
-        }
-    };
+    @Override
+    protected void setListener(View view) {
+        albumGV.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Intent intent = new Intent(getActivity(), PhotoActivity.class);
+                intent.putExtra("album", albumList.get(position));
+                startActivity(intent);
+            }
+        });
+    }
+
+    @Override
+    protected void processLogic(View view, Bundle savedInstanceState) {
+        albumList = getPhotoAlbum();
+        albumGV.setAdapter(new AlbumAdapter(albumList, getContext()));
+    }
 
     //按相册获取图片信息
     private List<AlbumItem> getPhotoAlbum() {

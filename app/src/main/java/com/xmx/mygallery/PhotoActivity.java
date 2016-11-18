@@ -11,16 +11,21 @@ import android.widget.TextView;
 
 import com.xmx.mygallery.Adapter.PhotoAdapter;
 import com.xmx.mygallery.Entities.AlbumItem;
+import com.xmx.mygallery.Tools.ActivityBase.BaseActivity;
 
-public class PhotoActivity extends Activity {
+public class PhotoActivity extends BaseActivity {
+
+    AlbumItem album;
+    TextView tv;
+    GridView gv;
+
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    protected void initView(Bundle savedInstanceState) {
         setContentView(R.layout.photo_activity);
 
-        final AlbumItem album = (AlbumItem) getIntent().getExtras().get("album");
+        album = (AlbumItem) getIntent().getExtras().get("album");
         if (album != null) {
-            TextView tv = (TextView) findViewById(R.id.photo_path);
+            tv = getViewById(R.id.photo_path);
             String p = album.getPaths().get(0);
             int end = p.lastIndexOf("/");
             if (end != -1) {
@@ -29,9 +34,15 @@ public class PhotoActivity extends Activity {
                 tv.setText(null);
             }
 
-            GridView gv = (GridView) findViewById(R.id.photo_gridview);
+            gv = getViewById(R.id.photo_gridview);
             PhotoAdapter adapter = new PhotoAdapter(this, album);
             gv.setAdapter(adapter);
+        }
+    }
+
+    @Override
+    protected void setListener() {
+        if (album != null) {
             gv.setOnItemClickListener(new OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -42,5 +53,10 @@ public class PhotoActivity extends Activity {
                 }
             });
         }
+    }
+
+    @Override
+    protected void processLogic(Bundle savedInstanceState) {
+
     }
 }
