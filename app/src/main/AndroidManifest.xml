@@ -14,7 +14,8 @@
         <activity android:name=".PhotoActivity" />
         <activity
             android:name=".BigPhotoActivity"
-            android:configChanges="orientation|screenSize">
+            android:configChanges="orientation|screenSize"
+            android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
